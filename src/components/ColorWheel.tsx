@@ -1,39 +1,54 @@
 import React from 'react'
 
-type Color = string
+import type Palette from '../lib/Palette'
+import { HexColor } from '../types'
+
 
 interface Props {
   radius: number,
-  colors: Color[],
+  palette: Palette,
 }
 
 
 export default function ColorWheel(props: Props): React.ReactElement {
-  const { colors, radius } = props
-  const divisions = colors.length
+  const { palette, radius } = props
+  const divisions = palette.divisions
 
   const size = radius * 2
   const centerX = radius
   const centerY = radius
 
+  const holeRadius = radius * 0.8
+
   const arcDegrees = 360 / divisions
   const segments = []
   for (let i = 0; i < divisions; i++) {
     const rotation = arcDegrees * i
-    const s = wheelSegment({ radius, centerX, centerY, rotation, arcDegrees, color: colors[i], label: `${i+1}`})
+    const color = palette.primary(i)
+    const textColor = palette.complementary(i, -0.8)
+    const label = `${i+1}`
+    const s = wheelSegment({ radius, centerX, centerY, rotation, arcDegrees, color, textColor, label })
     segments.push(s)
   }
 
   return (
     <svg width={size} height={size}>
-      {...segments}
+      <defs>
+        <mask id="rim-clip">
+          <circle cx={centerX} cy={centerY} r={radius} fill="white" />
+          <circle cx={centerX} cy={centerY} r={holeRadius} fill="black" ></circle>
+        </mask>
+      </defs>
+      <g mask="url(#rim-clip)">
+        {...segments}
+      </g>
     </svg>
   )
 }
 
 
-function wheelSegment(props: { radius: number, centerX: number, centerY: number, color: Color, label: string, rotation: number, arcDegrees: number }): React.ReactElement {
-  const { radius, centerX, centerY, color, label, rotation, arcDegrees } = props
+function wheelSegment(props: { radius: number, centerX: number, centerY: number, color: HexColor, label: string, textColor: HexColor, rotation: number, arcDegrees: number }): React.ReactElement {
+  const { radius, centerX, centerY, color, textColor, label, rotation, arcDegrees } = props
   const halfArc = arcDegrees / 2
   const p1 = polarToCartesian(centerX, centerY, radius, -halfArc)
   const p2 = polarToCartesian(centerX, centerY, radius, halfArc)
@@ -48,7 +63,7 @@ function wheelSegment(props: { radius: number, centerX: number, centerY: number,
     <polygon points={triangle} />
     <line x1={centerX} y1={centerY} x2={p1.x} y2={p1.y} stroke="#333" />
     <line x1={centerX} y1={centerY} x2={p2.x} y2={p2.y} stroke="#333" />
-    <text text-anchor="middle" x={labelPt.x} y={labelPt.y} stroke="#ccc" fill="#ccc">{label}</text>
+    <text textAnchor="middle" x={labelPt.x} y={labelPt.y} stroke={textColor} fill={textColor}>{label}</text>
   </g>
 }
 

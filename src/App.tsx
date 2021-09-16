@@ -1,17 +1,16 @@
 import React, { useState } from 'react'
 import ColorWheel from './components/ColorWheel'
-import './lib/RXB'
+import ParamsPanel from './components/ParamsPanel'
+import Palette from './lib/Palette'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  // @ts-ignore
-  const colors = RXB.rainbow(12).map(c => RXB.ryb2rgb(c)).map(c => '#' + RXB.rxb2hex(c))
+  const palette = new Palette()
 
   return (
     <div className="App">
-      <ColorWheel radius={300} colors={colors} />
+      <ColorWheel radius={300} palette={palette} />
+      <ParamsPanel />
     </div>
   )
 }
