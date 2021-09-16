@@ -41,6 +41,7 @@ export default function ColorWheel(props: Props): React.ReactElement {
       </defs>
       <g mask="url(#rim-clip)">
         {...segments}
+        <circle cx={centerX} cy={centerY} r={holeRadius} onClick={e => e.preventDefault()} />
       </g>
     </svg>
   )
@@ -58,7 +59,7 @@ function wheelSegment(props: { radius: number, centerX: number, centerY: number,
   const arcPath = describeArc(centerX, centerY, radius, -halfArc, halfArc)
   const triangle = `${centerX},${centerY} ${p1.x},${p1.y}, ${p2.x},${p2.y}`
 
-  return <g transform={`rotate(${rotation}, ${centerX}, ${centerY})`} fill={color} stroke={color} key={label} >
+  return <g transform={`rotate(${rotation}, ${centerX}, ${centerY})`} fill={color} stroke={color} key={label} onClick={() => console.log('clicked', label)}>
     <path d={arcPath}/>
     <polygon points={triangle} />
     <line x1={centerX} y1={centerY} x2={p1.x} y2={p1.y} stroke="#333" />
