@@ -1,12 +1,10 @@
 
-import type { RXBArray } from './lib/RXB'
-import type { Note, Scale } from '@tonaljs/tonal'
 
-interface ChromaSpace {
-  /** number of equal divisions per "octave". Defaults to 12 for 12-tone equal temperment. */
-  tonesPerPeriod?: number,
-
-
-}
+export type Point = { x: number, y: number }
 
 export type HexColor = string
+
+export interface HarmonicParams {
+  tonicNote: string,
+  scaleName: string,
+}
