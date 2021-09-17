@@ -4,6 +4,7 @@ import HarmonicContext, { defaultHarmonicParams } from './context/harmonic'
 import ColorWheel from './components/ColorWheel'
 import ParamsPanel from './components/ParamsPanel'
 import Palette from './lib/Palette'
+import HexKey from './components/HexKey'
 import './App.css'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
       <div className="App">
         <ColorWheel radius={300} palette={palette} />
         <ParamsPanel onChange={setHarmonicParams} />
+        <HexKey color="blue" size={60} />
       </div>
     </HarmonicContext.Provider>
   )

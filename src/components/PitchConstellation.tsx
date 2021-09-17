@@ -33,12 +33,6 @@ function PitchConstellation(props: Props): React.ReactElement {
   const lines = lineProps.map(pitchLine)
   return (
     <g key="pitch-constellation" >
-      <defs>
-        <linearGradient id='a' x1='0' x2='0' y1='0' y2='1'><stop offset='0'  stop-color='#80F'/><stop offset='1'  stop-color='#f40'/></linearGradient>
-        <pattern id='b'  width='24' height='24' patternUnits='userSpaceOnUse'>
-          <circle  fill='#ffffff' cx='12' cy='12' r='12'/>
-        </pattern>
-      </defs>
       {...lines}
     </g>
   )

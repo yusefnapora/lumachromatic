@@ -26,3 +26,17 @@ export function describeArc(center: Point, radius: number, startAngle: number, e
 export function lineTo(pt: Point): string {
   return `L ${pt.x}, ${pt.y}`
 }
+
+export function hexagonPoints(center: Point, size: number): string {
+  const corners = [0,1,2,3,4,5].map(i => hexCorner(center, size, i))
+  return corners.map(pt => `${pt.x},${pt.y}`).join(" ")
+}
+
+function hexCorner(center: Point, size: number, i: number): Point {
+  const angleDeg = 60 * i
+  const angleRad = Math.PI / 180 * angleDeg
+  return { 
+    x: center.x + size * Math.cos(angleRad), 
+    y: center.y + size * Math.sin(angleRad),
+  }
+}
