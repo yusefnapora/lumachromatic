@@ -3,6 +3,11 @@ import type { HexColor } from '../types'
 import RXB from './RXB'
 import type { RXBArray } from './RXB'
 
+import { Note } from '@tonaljs/tonal'
+import type { Scale } from '@tonaljs/scale'
+
+import tinycolor from 'tinycolor2'
+
 export default class Palette {
   divisions: number
   rainbow: RXBArray[]
@@ -12,26 +17,45 @@ export default class Palette {
   }
 
   primary(index: number): HexColor {
-    this._checkIndex(index)
+    index = index % this.rainbow.length
     return toHex(this.rainbow[index])
   }
 
   complementary(index: number, value: number): HexColor {
-    this._checkIndex(index)
+    index = index % this.rainbow.length
     const p = this.rainbow[index]
     return toHex(RXB.complementary(p, value))
   }
 
   neutrals(index: number, value: number, count?: number): HexColor[] {
-    this._checkIndex(index)
+    index = index % this.rainbow.length
     const p = this.rainbow[index]
     return RXB.neutrals(p, value, count).map(toHex)
   }
 
-  _checkIndex(index: number) {
-    if (index < 0 || index >= this.divisions) {
-      throw new Error(`Invalid color index ${index}. Valid range: 0-${this.divisions}`)
+  colorForNoteName(noteName: string, scale: Scale|undefined = undefined): HexColor | undefined {
+    const note = Note.get(noteName)
+    if (!note || note.chroma == null) {
+      return undefined
     }
+    let muted = false
+    let color = this.primary(note.chroma)
+    if (scale) {
+      muted = true
+      for (const sn of scale.notes) {
+        if (Note.get(sn).chroma === note.chroma) {
+          muted = false
+          break
+        }
+      }
+    }
+    if (muted) {
+      const hsla = tinycolor(color).toHsl()
+      hsla.l *= 0.3
+      const c = tinycolor(hsla).toHexString()
+      return c
+    }
+    return this.primary(note.chroma)
   }
 }
 

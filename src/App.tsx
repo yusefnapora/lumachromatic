@@ -19,6 +19,7 @@ function App() {
           <ParamsPanel onChange={setHarmonicParams} />
         </div>
         <TerpstraBoard />
+        <TerpstraBoard boardIndex={1} />
       </div>
     </HarmonicContext.Provider>
   )

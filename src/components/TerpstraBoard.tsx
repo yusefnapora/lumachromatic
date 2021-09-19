@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { Scale, Note, Interval } from '@tonaljs/tonal'
 
-import HexKey from './HexKey'
 import type { HexColor, Point } from '../types'
 import { hexagonPoints } from '../lib/drawing'
 import Palette from '../lib/Palette'
+import HarmonicContext from '../context/harmonic'
 
 /**
  * OffsetCoord is a point on the hex grid in "offset coordinates," using the "odd-r" layout described
@@ -16,7 +17,24 @@ interface OffsetCoord {
 
 const stringifyCoord = (coord: OffsetCoord): string => `${coord.q},${coord.r}`
 
-class CoordinateMap { 
+class CoordinateMap<V> {
+  #m: Map<string, V> = new Map()
+
+
+  set(c: OffsetCoord, v: V) {
+    this.#m.set(stringifyCoord(c), v)
+  }
+
+  get(c: OffsetCoord): V | undefined {
+    return this.#m.get(stringifyCoord(c))
+  }
+
+  get size(): number {
+    return this.#m.size
+  }
+}
+
+class KeyCoordinates { 
   static #keyCoords: OffsetCoord[]
   static #coordToKeyNum: Record<string, number>
 
@@ -30,7 +48,7 @@ class CoordinateMap {
       return points
     }
   
-    CoordinateMap.#keyCoords = [
+    KeyCoordinates.#keyCoords = [
       ...row(0, 2),       //  <><>
       ...row(1, 5),       //   <><><><><>
       ...row(2, 6),       //  <><><><><><>
@@ -44,9 +62,9 @@ class CoordinateMap {
       ...row(10, 2, 4),   //          <><>
     ]
 
-    CoordinateMap.#coordToKeyNum = {}
-    for (let keyNum = 0; keyNum < CoordinateMap.#keyCoords.length; keyNum++) {
-      const coord = CoordinateMap.#keyCoords[keyNum]
+    KeyCoordinates.#coordToKeyNum = {}
+    for (let keyNum = 0; keyNum < KeyCoordinates.#keyCoords.length; keyNum++) {
+      const coord = KeyCoordinates.#keyCoords[keyNum]
       this.#coordToKeyNum[stringifyCoord(coord)] = keyNum
     }
 
@@ -110,7 +128,7 @@ class BoardGeometry {
   }
 
   allKeyCenterPoints(): Point[] {
-    return CoordinateMap.allCoordinates().map(this.centerPoint)
+    return KeyCoordinates.allCoordinates().map(this.centerPoint)
   }
 
   hexPath(coord: OffsetCoord): string {
@@ -124,45 +142,133 @@ class BoardGeometry {
 }
 
 interface KeyDefinition {
-  color: HexColor,
-  label?: string,
-  note?: string, // TODO
+  note: string, // TODO: maybe use Note type from tonaljs
 }
 
-/**
- * Keymap for a single 56-key terpstra board.
- */
-class BoardKeymap {
-  // #definitions: KeyDefinition[]
+type KeyGenerator = Generator<KeyDefinition>
 
-  // static fromMap()
+// const generatorIntervals = ['2m', '4P', '5P', '7M']
+function *twelveToneGenerator(stepInterval: string = '5P', startNote: string = 'C'): KeyGenerator {
+  // if (!generatorIntervals.includes(stepInterval)) {
+  //   throw new Error(`Invalid interval. Valid options: ${generatorIntervals.join(', ')}`)
+  // }
+  const semisPerStep = Interval.semitones(stepInterval)!
+  let semitones = 0
+  let allNotes = new Set()
+  while (true) {
+    const note = Note.simplify(Note.transpose(startNote, Interval.fromSemitones(semitones)))
+    if (allNotes.add(note)) {
+      console.log('notes', allNotes)
+    }
+
+    yield { note }
+    semitones += semisPerStep
+    if (semitones >= 12) {
+      semitones -= 12
+    }
+  }
+}
+
+
+class RectangularToneMap {
+  #coords: CoordinateMap<KeyDefinition> = new CoordinateMap()
+
+  constructor(props: {gen: KeyGenerator, oddGen?: KeyGenerator, cols?: number, rows?: number}) {
+    const cols = props.cols || 6
+    const rows = props.rows || 11
+    const { gen } = props
+    const oddGen = props.oddGen || gen
+
+    for (let r = 0; r < rows; r++) {
+      for (let q = 0; q < cols; q++) {
+        let definition
+        if ((r % 2) === 0) {
+          definition = gen.next().value
+        } else {
+          definition = oddGen.next().value
+        }
+        this.#coords.set({ q, r }, definition)
+      }
+    }
+  }
+
+  get(c: OffsetCoord): KeyDefinition|undefined {
+    return this.#coords.get(c)
+  }
+}
+
+interface LabelDef {
+  center: Point,
+  text: string,
+  color: HexColor,
 }
 
 /**
  * A 56-key arrangement of hexagonal keys - one fifth of a full lumatone layout.
  */
-export default function TerpstraBoard(): React.ReactElement {
+export default function TerpstraBoard(props: { boardIndex?: number, tx?: number, ty?: number }): React.ReactElement {
   const keyDiameter = 30
   const keyMargin = 2
   const geo = new BoardGeometry({ keyDiameter, keyMargin, })
   const width = 1000
   const height = 1000
 
-  // TODO: mappings, etc. for now, rainbow!
-  const coords = CoordinateMap.allCoordinates()
-  const palette = new Palette(coords.length)
+  const boardIndex = props.boardIndex || 0
 
-  const keys = coords
-    .map(c => <polygon 
-      points={geo.hexPath(c)} key={stringifyCoord(c)} 
-      fill={palette.primary(CoordinateMap.keyNumber(c)!)} 
-      stroke="black" 
-    />)
+  const { scaleName, tonicNote } = useContext(HarmonicContext)
+  const scale = Scale.get([tonicNote, scaleName].join(' '))
+  console.log('board scale: ', scale)
+
+  const generatorInterval = '2M'
+  const boardShift = 0
+
+  const startNote = Note.transpose('C', Interval.fromSemitones(boardShift * boardIndex))
+  const toneMap = new RectangularToneMap({
+    gen: twelveToneGenerator(generatorInterval, startNote),
+    oddGen: twelveToneGenerator(generatorInterval, Note.transpose(startNote, Interval.fromSemitones(1)))
+  })
+  const coords = KeyCoordinates.allCoordinates()
+  const palette = new Palette(12)
+
+  const keyProps = coords
+    .map(c => {
+      const def = toneMap.get(c)
+      // console.log('key def for coord', c, def)
+      if (!def) {
+        return null
+      }
+      const points = geo.hexPath(c)
+      const key = stringifyCoord(c)
+      const fill = palette.colorForNoteName(def.note, scale)
+      const label = {
+        text: def.note,
+        color: 'black',
+        center: geo.centerPoint(c),
+      }
+      return { points, key, fill, stroke: 'black', label }
+    })
+    .filter(p => p != null)
+
+  // @ts-ignore
+  const keys = keyProps.map(({ label, key, ...polygonProps }) => 
+    <g key={key}>
+      <polygon {...polygonProps} />
+      <text x={label.center.x} y={label.center.y} textAnchor="middle" stroke={label.color} fill={label.color}>
+        {label.text}
+      </text>
+    </g>
+  )
+  // console.log('keys', keys)
 
   const rot = -17.42 // matches the angle in the lumatone editor gui
-  const translateY = 100 // FIXME: this is just to account for clipping after rotation. could be cleaner
-  const transform = `rotate(${rot}) translate(0, ${translateY})`
-  return <svg width={width} height={height} >
+
+  const xOffset = -202.5 * boardIndex
+  const yOffset = -7.5 * boardIndex
+  const tx = xOffset
+  let ty = yOffset
+  const boardTy = 100 // FIXME: this is just to account for clipping after rotation. could be cleaner
+  const transform = `rotate(${rot}) translate(0, ${boardTy})`
+  return <svg width={width} height={height} transform={`translate(${tx}, ${ty})`}>
     <g transform={transform}>
       {keys}
     </g>
