@@ -1,10 +1,10 @@
 import React, { useContext } from 'react'
 import { Scale, Note } from '@tonaljs/tonal'
 
-import HarmonicContext from '../context/harmonic'
+import HarmonicContext from '../../context/harmonic'
 
-import type Palette from '../lib/Palette'
-import type { HexColor, Point } from '../types'
+import type Palette from '../../lib/Palette'
+import type { HexColor, Point } from '../../types'
 
 import Wedge from './Wedge'
 import PitchConstellation from './PitchConstellation'

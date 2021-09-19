@@ -1,6 +1,6 @@
 import React from 'react'
-import { polarToCartesian, describeArc, lineTo } from '../lib/drawing'
-import type { Point, HexColor } from '../types'
+import { polarToCartesian, describeArc, lineTo } from '../../lib/drawing'
+import type { Point, HexColor } from '../../types'
 
 export interface WedgeProps {
   radius: number,

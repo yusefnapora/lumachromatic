@@ -33,7 +33,7 @@ export function hexagonPoints(center: Point, size: number): string {
 }
 
 function hexCorner(center: Point, size: number, i: number): Point {
-  const angleDeg = 60 * i
+  const angleDeg = (60 * i) - 30
   const angleRad = Math.PI / 180 * angleDeg
   return { 
     x: center.x + size * Math.cos(angleRad), 

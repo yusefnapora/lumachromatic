@@ -5,6 +5,12 @@
 
 }
 
+.HarmonyControls {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
 body {
   background-color: black;
   color: white;

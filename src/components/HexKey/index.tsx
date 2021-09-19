@@ -2,7 +2,7 @@ import React from 'react'
 import { hexagonPoints } from '../../lib/drawing';
 import { HexColor } from '../../types';
 
-interface Props {
+export interface Props {
   color: HexColor,
   size: number,
 }
@@ -13,7 +13,7 @@ export default function HexKey(props: Props): React.ReactElement {
   const { size, color } = props
   const points = hexagonPoints({x: size, y: size}, size)
   const angle = DEFAULT_ROTATION_ANGLE // TODO: add to props
-  return <svg width={size*2} height={size*2} transform={`rotate(${angle})`}>
-    <polygon points={points} fill={color} stroke="white" />
+  return <svg width={size*2} height={size*2} >
+    <polygon points={points} fill={color} stroke="black" />
   </svg>
 }

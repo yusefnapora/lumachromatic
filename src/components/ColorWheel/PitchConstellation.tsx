@@ -2,9 +2,9 @@ import React from 'react'
 import { Scale, Interval, Note } from '@tonaljs/tonal'
 import type { Scale as ScaleType } from '@tonaljs/scale'
 
-import type { HexColor, Point } from '../types'
-import type Palette from '../lib/Palette'
-import { polarToCartesian } from '../lib/drawing'
+import type { HexColor, Point } from '../../types'
+import type Palette from '../../lib/Palette'
+import { polarToCartesian } from '../../lib/drawing'
 
 interface Props {
   scale: ScaleType,
