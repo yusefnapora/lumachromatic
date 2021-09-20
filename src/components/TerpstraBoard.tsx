@@ -1,5 +1,6 @@
 import React, { useContext } from 'react'
 import { Scale, Note, Interval } from '@tonaljs/tonal'
+import type { Scale as ScaleT } from '@tonaljs/scale'
 
 import type { HexColor, Point } from '../types'
 import { hexagonPoints } from '../lib/drawing'
@@ -49,23 +50,24 @@ class KeyCoordinates {
     }
   
     KeyCoordinates.#keyCoords = [
-      ...row(0, 2),       //  <><>
-      ...row(1, 5),       //   <><><><><>
-      ...row(2, 6),       //  <><><><><><>
-      ...row(3, 6),       //   <><><><><><>
-      ...row(4, 6),       //  <><><><><><>
-      ...row(5, 6),       //   <><><><><><>
-      ...row(6, 6),       //  <><><><><><>
-      ...row(7, 6),       //   <><><><><><>
+      ...row(10, 2),       //  <><>
+      ...row(9, 5),       //   <><><><><>
       ...row(8, 6),       //  <><><><><><>
-      ...row(9, 5, 1),    //     <><><><><>
-      ...row(10, 2, 4),   //          <><>
+      ...row(7, 6),       //   <><><><><><>
+      ...row(6, 6),       //  <><><><><><>
+      ...row(5, 6),       //   <><><><><><>
+      ...row(4, 6),       //  <><><><><><>
+      ...row(3, 6),       //   <><><><><><>
+      ...row(2, 6),       //  <><><><><><>
+      ...row(1, 5, 1),    //     <><><><><>
+      ...row(0, 2, 4),   //          <><>
     ]
 
     KeyCoordinates.#coordToKeyNum = {}
     for (let keyNum = 0; keyNum < KeyCoordinates.#keyCoords.length; keyNum++) {
       const coord = KeyCoordinates.#keyCoords[keyNum]
       this.#coordToKeyNum[stringifyCoord(coord)] = keyNum
+      // console.log(`key ${keyNum}: ${stringifyCoord(coord)}`)
     }
 
   })()
@@ -122,7 +124,7 @@ class BoardGeometry {
     const rowOffset = (coord.r % 2 === 0) ? 0 : (strideW / 2)
 
     const x = c.x + rowOffset + (coord.q * strideW)
-    const y = c.y + (coord.r * strideH)
+    const y = c.y - (coord.r * strideH)
 
     return this._withOrigin({ x, y })
   }
@@ -158,19 +160,23 @@ function *twelveToneGenerator(stepInterval: string = '5P', startNote: string = '
   while (true) {
     const note = Note.simplify(Note.transpose(startNote, Interval.fromSemitones(semitones)))
     if (allNotes.add(note)) {
-      console.log('notes', allNotes)
+      // console.log('notes', allNotes)
     }
 
     yield { note }
     semitones += semisPerStep
-    if (semitones >= 12) {
-      semitones -= 12
-    }
+    // if (semitones >= 12) {
+    //   semitones -= 12
+    // }
   }
 }
 
 
-class RectangularToneMap {
+interface ToneMap {
+  get(c: OffsetCoord): KeyDefinition|undefined
+}
+
+class RectangularToneMap implements ToneMap {
   #coords: CoordinateMap<KeyDefinition> = new CoordinateMap()
 
   constructor(props: {gen: KeyGenerator, oddGen?: KeyGenerator, cols?: number, rows?: number}) {
@@ -197,10 +203,45 @@ class RectangularToneMap {
   }
 }
 
-interface LabelDef {
-  center: Point,
-  text: string,
-  color: HexColor,
+function exportLumatoneIni(boardIndex: number = 0, toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined): string {
+  const keyConfigs: Record<number, string> = {}
+  for (const c of KeyCoordinates.allCoordinates()) {
+    const keyNum = KeyCoordinates.keyNumber(c)
+    if (keyNum == null) {
+      console.warn('key num not found for ', c)
+      continue
+    }
+    const keyDef = toneMap.get(c)
+    if (keyDef == null) {
+      console.warn('key definition not found for ', c)
+      continue
+    }
+    const color = palette.colorForNoteName(keyDef.note, scale)?.replace(/^#/, '')
+    if (color == null) {
+      console.warn('color not found for ', c)
+      continue
+    }
+
+    const midiNote = Note.get(keyDef.note).midi
+    if (midiNote == null) {
+      console.warn('no midi note found for:', keyDef.note)
+      continue
+    }
+    const midiChannel = 0 // TODO: multiple channels
+    keyConfigs[keyNum] = [
+      `Key_${keyNum}=${midiNote}`,
+      `Chan_${keyNum}=${midiChannel}`,
+      `Col_${keyNum}=${color}`
+    ].join('\n')
+  }
+  // console.log('lumatone configs', keyConfigs)
+
+  const lines = [`[Board${boardIndex}]`]
+  for (let i = 0; i < 56; i++) {
+    const cfg = keyConfigs[i] || ''
+    lines.push(cfg)
+  }
+  return lines.join('\n')
 }
 
 /**
@@ -209,7 +250,7 @@ interface LabelDef {
 export default function TerpstraBoard(props: { boardIndex?: number, tx?: number, ty?: number }): React.ReactElement {
   const keyDiameter = 30
   const keyMargin = 2
-  const geo = new BoardGeometry({ keyDiameter, keyMargin, })
+  const geo = new BoardGeometry({ keyDiameter, keyMargin, origin: { x: 0, y: 500 }})
   const width = 1000
   const height = 1000
 
@@ -222,7 +263,7 @@ export default function TerpstraBoard(props: { boardIndex?: number, tx?: number,
   const generatorInterval = '2M'
   const boardShift = 0
 
-  const startNote = Note.transpose('C', Interval.fromSemitones(boardShift * boardIndex))
+  const startNote = Note.transpose('C0', Interval.fromSemitones(boardShift * boardIndex))
   const toneMap = new RectangularToneMap({
     gen: twelveToneGenerator(generatorInterval, startNote),
     oddGen: twelveToneGenerator(generatorInterval, Note.transpose(startNote, Interval.fromSemitones(1)))
@@ -230,6 +271,9 @@ export default function TerpstraBoard(props: { boardIndex?: number, tx?: number,
   const coords = KeyCoordinates.allCoordinates()
   const palette = new Palette(12)
 
+  const lumatoneCfg = exportLumatoneIni(boardIndex, toneMap, palette, scale)
+  console.log(lumatoneCfg)
+  
   const keyProps = coords
     .map(c => {
       const def = toneMap.get(c)
