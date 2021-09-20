@@ -21,7 +21,7 @@ export class CoordinateMap<V> {
 
 export class KeyCoordinates { 
   static #keyCoords: OffsetCoord[]
-  static #coordToKeyNum: Record<string, number>
+  static #coordToKeyNum: CoordinateMap<number>
 
   private static _initialize = (() => {
     const row = (r: number, numCols: number, startCol: number = 0): OffsetCoord[] => {
@@ -47,10 +47,10 @@ export class KeyCoordinates {
       ...row(0, 2, 4),   //          <><>
     ]
 
-    KeyCoordinates.#coordToKeyNum = {}
+    KeyCoordinates.#coordToKeyNum = new CoordinateMap()
     for (let keyNum = 0; keyNum < KeyCoordinates.#keyCoords.length; keyNum++) {
       const coord = KeyCoordinates.#keyCoords[keyNum]
-      this.#coordToKeyNum[stringifyCoord(coord)] = keyNum
+      this.#coordToKeyNum.set(coord, keyNum)
       // console.log(`key ${keyNum}: ${stringifyCoord(coord)}`)
     }
 
@@ -68,6 +68,6 @@ export class KeyCoordinates {
   }
 
   static keyNumber(coord: OffsetCoord): number|undefined {
-    return this.#coordToKeyNum[stringifyCoord(coord)]
+    return this.#coordToKeyNum.get(coord)
   }
 }
