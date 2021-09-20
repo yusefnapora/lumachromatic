@@ -1,6 +1,9 @@
 import React from 'react'
 import { Formik, Form, Field } from 'formik'
-import type { HarmonicParams } from '../types'
+import styles from './styles.css'
+
+import type { HarmonicParams } from '../../types'
+
 
 const SCALE_TYPES = ['major', 'minor', 'harmonic minor', 'melodic minor', 'augmented', 'diminished', 'blues', 'major blues', 'major pentatonic', 'minor pentatonic']
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -11,7 +14,7 @@ interface Props {
 
 export default function ParamsPanel(props: Props): React.ReactElement {
   return (
-    <div>
+    <div className={styles.ParamsPanel} >
       <Formik 
         initialValues={{
           tonicNote: 'C',
