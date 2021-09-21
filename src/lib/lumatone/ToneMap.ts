@@ -28,9 +28,9 @@ export function *twelveToneGenerator(stepInterval: string = '5P', startNote: str
 
     yield { note }
     semitones += semisPerStep
-    // if (semitones >= 12) {
-    //   semitones -= 12
-    // }
+    if (semitones >= 12) {
+      semitones -= 12
+    }
   }
 }
 

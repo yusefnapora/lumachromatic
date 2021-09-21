@@ -34,8 +34,8 @@ export class KeyCoordinates {
     }
   
     KeyCoordinates.#keyCoords = [
-      ...row(10, 2),       //  <><>
-      ...row(9, 5),       //   <><><><><>
+      ...row(10, 2),      //  <><>........
+      ...row(9, 5),       //   <><><><><>..
       ...row(8, 6),       //  <><><><><><>
       ...row(7, 6),       //   <><><><><><>
       ...row(6, 6),       //  <><><><><><>
@@ -43,8 +43,8 @@ export class KeyCoordinates {
       ...row(4, 6),       //  <><><><><><>
       ...row(3, 6),       //   <><><><><><>
       ...row(2, 6),       //  <><><><><><>
-      ...row(1, 5, 1),    //     <><><><><>
-      ...row(0, 2, 4),   //          <><>
+      ...row(1, 5, 1),    //   ..<><><><><>
+      ...row(0, 2, 4),    //  ........<><>
     ]
 
     KeyCoordinates.#coordToKeyNum = new CoordinateMap()

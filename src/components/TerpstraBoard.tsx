@@ -27,10 +27,12 @@ export default function TerpstraBoard(props: { boardIndex?: number, tx?: number,
   const generatorInterval = '2M'
   const boardShift = 0
 
-  const startNote = Note.transpose('C0', Interval.fromSemitones(boardShift * boardIndex))
+  const startNote = Note.transpose(`C${boardIndex}`, Interval.fromSemitones(boardShift * boardIndex))
+  const genTonic = twelveToneGenerator(generatorInterval, startNote)
+  const genOffset = twelveToneGenerator(generatorInterval, Note.transpose(startNote, Interval.fromSemitones(1)))
   const toneMap = new RectangularToneMap({
-    gen: twelveToneGenerator(generatorInterval, startNote),
-    oddGen: twelveToneGenerator(generatorInterval, Note.transpose(startNote, Interval.fromSemitones(1)))
+    gen: genTonic,
+    oddGen: genOffset,
   })
   const coords = KeyCoordinates.allCoordinates()
   const palette = new Palette(12)
@@ -39,6 +41,13 @@ export default function TerpstraBoard(props: { boardIndex?: number, tx?: number,
   if (boardIndex === 0) {
     let full = ''
     for (let i = 0; i < 5; i++) {
+      const startNote = Note.transpose(`C${i}`, Interval.fromSemitones(boardShift * i))
+      const genTonic = twelveToneGenerator(generatorInterval, startNote)
+      const genOffset = twelveToneGenerator(generatorInterval, Note.transpose(startNote, Interval.fromSemitones(1)))
+      const toneMap = new RectangularToneMap({
+        gen: genTonic,
+        oddGen: genOffset,
+      })
       const lumatoneCfg = exportLumatoneIni(i, toneMap, palette, scale)
       full += lumatoneCfg
     }
