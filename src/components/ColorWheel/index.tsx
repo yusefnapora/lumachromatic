@@ -4,7 +4,6 @@ import { Scale, Note } from '@tonaljs/tonal'
 import HarmonicContext from '../../context/harmonic'
 
 import type Palette from '../../lib/Palette'
-import type { HexColor, Point } from '../../types'
 
 import Wedge from './Wedge'
 import PitchConstellation from './PitchConstellation'
@@ -20,7 +19,7 @@ const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 export default function ColorWheel(props: Props): React.ReactElement {
   const { palette, radius } = props
-  const { scaleName, tonicNote } = useContext(HarmonicContext)
+  const { scale } = useContext(HarmonicContext)
   const divisions = palette.divisions
 
   const size = radius * 2
@@ -44,9 +43,9 @@ export default function ColorWheel(props: Props): React.ReactElement {
   }
 
   const constellationRadius = holeRadius
-  const constellation = PitchConstellation({scale: Scale.get(tonicNote + " " + scaleName), radius: constellationRadius, center, palette })
+  const constellation = PitchConstellation({scale, radius: constellationRadius, center, palette })
 
-  const ringRotation = wheelRotation(tonicNote)
+  const ringRotation = wheelRotation(scale.tonic!)
   return (
     <svg width={size} height={size}>
       <defs>

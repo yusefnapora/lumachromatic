@@ -1,6 +1,7 @@
 import React from 'react'
+import { Scale } from '@tonaljs/tonal'
 import { Formik, Form, Field } from 'formik'
-import styles from './styles.css'
+import './styles.css'
 
 import type { HarmonicParams } from '../../types'
 
@@ -14,7 +15,7 @@ interface Props {
 
 export default function ParamsPanel(props: Props): React.ReactElement {
   return (
-    <div className={styles.ParamsPanel} >
+    <div className='.ParamsPanel' >
       <Formik 
         initialValues={{
           tonicNote: 'C',
@@ -22,7 +23,9 @@ export default function ParamsPanel(props: Props): React.ReactElement {
         }}
 
         onSubmit={(values) => {
-          props.onChange && props.onChange(values)
+          const { tonicNote, scaleName } = values
+          const scale = Scale.get(tonicNote + ' ' + scaleName)
+          props.onChange && props.onChange({ scale })
         }}
       >
         {({submitForm, handleChange}) =>
