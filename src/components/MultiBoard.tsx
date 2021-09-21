@@ -18,6 +18,8 @@ export default function MultiBoard(props: Props): React.ReactElement {
   const boards = []
   const xOffset = (geo.boardWidth() - (geo.rowWidth / 2))
   const yOffset = (geo.rowHeight * 2)
+  let w = 0
+  let h = 0
   for (let i = 0; i < numBoards; i++) {
     const key = i.toString()
     const x = xOffset * i
@@ -26,18 +28,19 @@ export default function MultiBoard(props: Props): React.ReactElement {
     const toneMap = tm.transposed(i * 12)
     const b = TerpstraBoard({ key, palette, toneMap, geometry })
     boards.push(b)
+    w = x + geo.boardWidth()
+    h = y + geo.boardHeight()
   }
 
   const rot = -17.42
-  const w = (geo.boardWidth() * numBoards)
-  const h = geo.boardHeight() + ((numBoards-1) * yOffset)
+
   const bounds = rotatedRectBounds({ origin: { x: 0, y: 0 }, size: { w, h }}, rot)
-  const tx = (bounds.size.w - w) + geo.keyWidth
+  const tx = -1*bounds.origin.x
   const ty = 0//(bounds.origin.y)
   console.log('w/h', w, h)
   console.log(`bounds: ${bounds.origin.x}, ${bounds.origin.y} / ${bounds.size.w}, ${bounds.size.h}`)
 
-  const transform = `translate(${tx}, ${ty}) rotate(${rot}, ${bounds.size.w/2}, ${bounds.size.h/2})`
+  const transform = `rotate(${rot}, ${w/2}, ${h/2}) translate(${tx}, ${ty}) `
   return <svg width={bounds.size.w} height={h}>
     <g transform={transform}>
       {...boards}

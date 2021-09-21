@@ -198,7 +198,7 @@ function neutrals(hex: string | RXBArray, value: number, count: number = 8): RXB
     ryb[2] += d.b;
   }
 
-  return n;
+  return n as RXBArray[];
 }
 
 /**

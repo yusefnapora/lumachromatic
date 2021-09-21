@@ -60,8 +60,8 @@ export function rotatedRectBounds(rect: Rect, rotationDegrees: number): Rect {
   }
 
   const topLeft = rect.origin
-  const topRight = addPoints(rect.origin, { x: 0, y: rect.size.w })
-  const bottomLeft = addPoints(rect.origin, { x: rect.size.h, y: 0 })
+  const topRight = addPoints(rect.origin, { x: rect.size.w, y: 0 })
+  const bottomLeft = addPoints(rect.origin, { x: 0, y: rect.size.h })
   const bottomRight = addPoints(rect.origin, { x: rect.size.w, y: rect.size.h })
 
   const points = [

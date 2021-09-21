@@ -42,7 +42,7 @@ function App() {
           <ParamsPanel onChange={onChange} exportReqested={onExport} />
         </div>
         <div className="BoardContainer">
-          <MultiBoard {...{ geometry, numBoards: 5}} />
+          <MultiBoard {...{ geometry, numBoards: 3}} />
         </div>
       </div>
     </ParamsContext.Provider>
