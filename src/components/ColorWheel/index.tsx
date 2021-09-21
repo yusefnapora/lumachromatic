@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { Scale, Note } from '@tonaljs/tonal'
 
-import HarmonicContext from '../../context/harmonic'
+import ParamsContext from '../../context/params'
 
 import type Palette from '../../lib/Palette'
 
@@ -11,15 +11,14 @@ import PitchConstellation from './PitchConstellation'
 
 interface Props {
   radius: number,
-  palette: Palette,
 }
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 
 export default function ColorWheel(props: Props): React.ReactElement {
-  const { palette, radius } = props
-  const { scale } = useContext(HarmonicContext)
+  const { radius } = props
+  const { harmonic: { scale }, color: { palette } } = useContext(ParamsContext)
   const divisions = palette.divisions
 
   const size = radius * 2

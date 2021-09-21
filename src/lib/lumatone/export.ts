@@ -5,7 +5,7 @@ import type { Scale as ScaleT } from '@tonaljs/scale'
 import type Palette from '../Palette'
 import type { ToneMap } from './ToneMap'
 
-export function exportLumatoneIni(boardIndex: number = 0, toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined): string {
+function singleBoardConfig(boardIndex: number = 0, toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined): string {
   const keyConfigs: Record<number, string> = {}
   for (const c of KeyCoordinates.allCoordinates()) {
     const keyNum = KeyCoordinates.keyNumber(c)
@@ -45,4 +45,12 @@ export function exportLumatoneIni(boardIndex: number = 0, toneMap: ToneMap, pale
   }
   lines.push('')
   return lines.join('\n')
+}
+
+export function exportLumatoneIni(toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined, boardTranspose: number = 12): string {
+  let configs = []
+  for (let i = 0; i < 5; i++) {
+    configs.push(singleBoardConfig(i, toneMap.transposed(boardTranspose * i), palette, scale))
+  }
+  return configs.join('\n')
 }

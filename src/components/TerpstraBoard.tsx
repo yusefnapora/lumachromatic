@@ -4,7 +4,7 @@ import { KeyCoordinates, stringifyCoord } from '../lib/coordinates'
 import type { ToneMap } from '../lib/lumatone/ToneMap'
 import type { BoardGeometry } from '../lib/lumatone/BoardGeometry'
 import type Palette from '../lib/Palette'
-import HarmonicContext from '../context/harmonic'
+import ParamsContext from '../context/params'
 
 
 interface Props {
@@ -20,7 +20,7 @@ interface Props {
 export default function TerpstraBoard(props: Props): React.ReactElement {
   const { geometry, toneMap, palette } = props
 
-  const { scale } = useContext(HarmonicContext)
+  const { harmonic: { scale } } = useContext(ParamsContext)
   console.log('board scale: ', scale)
   
   const keyProps = KeyCoordinates.allCoordinates()

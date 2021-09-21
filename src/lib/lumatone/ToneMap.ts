@@ -84,3 +84,16 @@ export class RectangularToneMap implements ToneMap {
     return new RectangularToneMap({...this.#props, transpose: semitones})
   }
 }
+
+
+export function TwelveToneMap(startNote: string = 'C0') {
+  const intervalRight = '2M'
+  const intervalUpRight = '2m'
+
+  const genTonic = twelveToneGenerator(intervalRight, startNote)
+  const genOffset = twelveToneGenerator(intervalRight, Note.transpose(startNote, intervalUpRight))
+  return new RectangularToneMap({
+    gen: genTonic,
+    oddGen: genOffset,
+  })
+}

@@ -1,22 +1,20 @@
-import React from 'react'
+import React, { useContext } from 'react'
 
-import type { ToneMap } from '../lib/lumatone/ToneMap'
 import type { BoardGeometry } from '../lib/lumatone/BoardGeometry'
-import type Palette from '../lib/Palette'
 import TerpstraBoard from './TerpstraBoard'
 import { rotatedRectBounds } from '../lib/drawing'
+import ParamsContext from '../context/params'
 
 interface Props {
   numBoards?: number,
   geometry: BoardGeometry,
-  toneMap: ToneMap,
-  palette: Palette,
 }
 
 export default function MultiBoard(props: Props): React.ReactElement {
   const numBoards = props.numBoards || 2
+  const { mapping: { toneMap: tm }, color: { palette } } = useContext(ParamsContext)
 
-  const { geometry: geo, toneMap: tm, palette } = props
+  const { geometry: geo, } = props
   const boards = []
   const xOffset = (geo.boardWidth() - (geo.rowWidth / 2))
   const yOffset = (geo.rowHeight * 2)

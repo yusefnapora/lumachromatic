@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tonaljs/tonal": "^4.6.5",
+    "file-saver": "^2.0.5",
     "formik": "^2.2.9",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",

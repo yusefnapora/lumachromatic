@@ -1,47 +1,51 @@
 import React, { useState } from 'react'
-import { Note, Interval } from '@tonaljs/tonal'
+import { saveAs } from 'file-saver'
 
-import HarmonicContext, { defaultHarmonicParams } from './context/harmonic'
+import ParamsContext, { defaultParams } from './context/params'
 import ColorWheel from './components/ColorWheel'
 import ParamsPanel from './components/ParamsPanel'
-import Palette from './lib/Palette'
-import { twelveToneGenerator, RectangularToneMap } from './lib/lumatone/ToneMap'
 import MultiBoard from './components/MultiBoard'
+
+import { exportLumatoneIni } from './lib/lumatone/export'
 
 import './App.css'
 import { BoardGeometry } from './lib/lumatone/BoardGeometry'
+import { AllParams } from './types'
 
 function App() {
-  const [harmonicParams, setHarmonicParams] = useState(defaultHarmonicParams)
+  const [params, setParams] = useState(defaultParams)
 
-  const palette = new Palette()
-  const keyDiameter = 30
+  const keyDiameter = 28
   const keyMargin = 2
   const geometry = new BoardGeometry({ keyDiameter, keyMargin })
 
-  const intervalRight = '2M'
-  const intervalUpRight = '2m'
+  const onChange = (partialParams: Partial<AllParams>) => {
+    const p = {...params, ...partialParams}
+    // @ts-ignore
+    setParams(p)
+  } 
 
-  const startNote = 'C0'
-  const genTonic = twelveToneGenerator(intervalRight, startNote)
-  const genOffset = twelveToneGenerator(intervalRight, Note.transpose(startNote, intervalUpRight))
-  const toneMap = new RectangularToneMap({
-    gen: genTonic,
-    oddGen: genOffset,
-  })
+  const onExport = () => {
+    console.log('exporting lumatone config')
+    const { harmonic: { scale }, color: { palette }, mapping: { toneMap } } = params
+    const ini = exportLumatoneIni(toneMap, palette, scale)
+    const blob = new Blob([ini], {type: "text/plain;charset=utf-8"})
+    const filename = scale.name + '.ltn'
+    saveAs(blob, filename)
+  }
 
   return (
-    <HarmonicContext.Provider value={harmonicParams} >
+    <ParamsContext.Provider value={params} >
       <div className="App">
         <div className="HarmonyControls">
-          <ColorWheel radius={300} palette={palette} />
-          <ParamsPanel onChange={setHarmonicParams} />
+          <ColorWheel radius={300} />
+          <ParamsPanel onChange={onChange} exportReqested={onExport} />
         </div>
         <div className="BoardContainer">
-          <MultiBoard {...{palette, geometry, toneMap: toneMap, numBoards: 5}} />
+          <MultiBoard {...{ geometry, numBoards: 5}} />
         </div>
       </div>
-    </HarmonicContext.Provider>
+    </ParamsContext.Provider>
   )
 }
 
