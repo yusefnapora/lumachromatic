@@ -1,6 +1,7 @@
 {
   "name": "lumachromatic",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -10,6 +11,7 @@
   },
   "dependencies": {
     "@tonaljs/tonal": "^4.6.5",
+    "decamelize": "^5.0.0",
     "file-saver": "^2.0.5",
     "formik": "^2.2.9",
     "react": "^17.0.0",
