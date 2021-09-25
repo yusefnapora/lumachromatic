@@ -3,8 +3,6 @@ import Sentence from 'sysex'
 import type { Command, BoardIndex } from './constants'
 export type EncodedSysex = number[]
 
-// manufacturer info
-const HEADER = '00 21 50 '
 
 // export function createSysEx(boardIndex: BoardIndex, cmd: Command, data1?: number, data2?: number, data3?: number, data4?: number): EncodedSysex {
 //   const s = new Sentence(HEADER + 'boardIndex cmd data1 data2 data3 data4')
@@ -13,7 +11,7 @@ const HEADER = '00 21 50 '
 
 export function createSysEx(boardIndex: BoardIndex, cmd: Command, ...data: number[]): EncodedSysex {
   const dataStr = data.map(toTwoHexDigits).join(' ')  
-  const s = new Sentence(HEADER + 'boardIndex cmd ' + dataStr)
+  const s = new Sentence('boardIndex cmd ' + dataStr)
   return s.encode({ boardIndex, cmd })
 }
 
@@ -25,23 +23,40 @@ export function createSysEx(boardIndex: BoardIndex, cmd: Command, ...data: numbe
 }
 
 export function createExtendedKeyColourSysEx(boardIndex: BoardIndex, cmd: Command, keyIndex: number, red: number, green: number, blue: number): EncodedSysex {
-  const s = new Sentence(HEADER + 'boardIndex cmd keyIndex redUpper redLower greenUpper greenLower blueUpper blueLower')
+  const s = new Sentence('boardIndex cmd keyIndex redUpper redLower greenUpper greenLower blueUpper blueLower')
   const colorPairs = toRGBPairs(red, green, blue)
   return s.encode({boardIndex, cmd, keyIndex, ...colorPairs })
 }
 
 export function createExtendedMacroColourSysEx(cmd: Command, red: number, green: number, blue: number): EncodedSysex {
-  const s = new Sentence(HEADER + '00 cmd redUpper redLower greenUpper greenLower blueUpper blueLower')
+  const s = new Sentence('00 cmd redUpper redLower greenUpper greenLower blueUpper blueLower')
   const colorPairs = toRGBPairs(red, green, blue)
   return s.encode({ cmd, ...colorPairs })
 }
 
 export function createTableSysEx(cmd: Command, table: number[]): EncodedSysex {
   const tableDigits = table.map(toTwoHexDigits).join(' ')
-  const s = new Sentence(HEADER + '00 cmd ' + tableDigits)
+  const s = new Sentence('00 cmd ' + tableDigits)
   return s.encode({ cmd })
 }
 
+export function messageIsResponseToMessage(outgoing: EncodedSysex, incoming: EncodedSysex): boolean {
+  if (outgoing.length < 5 || incoming.length < 5) {
+    return false
+  }
+  // responses have the same manufacturer id, board index, and command id, so the first 5 bytes will
+  // be equal
+  for (let i = 0; i < 5; i++) {
+    if (outgoing[i] !== incoming[i]) {
+      return false
+    }
+  }
+  return true
+}
+
+export function fromMidiData(data: Uint8Array): EncodedSysex {
+  return [...data]
+}
 
 // --- helpers
 

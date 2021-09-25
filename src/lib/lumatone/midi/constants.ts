@@ -33,6 +33,8 @@ export const MANUFACTURER_ID_0 = 0x00
 export const MANUFACTURER_ID_1 = 0x21
 export const MANUFACTURER_ID_2 = 0x50
 
+export const MANUFACTURER_ID = [MANUFACTURER_ID_0, MANUFACTURER_ID_1, MANUFACTURER_ID_2]
+
 // index into sysex data of various fields
 export const MANU_0       = 0x0
 export const MANU_1       = 0x1
