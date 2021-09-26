@@ -1,198 +1,258 @@
 import WebMidi from 'webmidi'
-import { MANUFACTURER_ID, FirmwareAnswer } from './constants'
-import { messageIsResponseToMessage } from './sysex'
+import { stateMachine, State } from 'ts-checked-fsm'
 import Debug from 'debug'
 
-import type { InputEventSysex, Input, Output } from 'webmidi'
+import { MANUFACTURER_ID, FirmwareAnswer } from './constants'
+import { messageIsResponseToMessage } from './sysex'
+
+import type { MidiDevice  } from './device'
+import type { InputEventSysex, Output } from 'webmidi'
 import type { EncodedSysex } from './sysex'
 
 const debug = Debug('midi-driver')
+type Timeout = ReturnType<typeof setTimeout>
 
 const RECIEVE_TIMEOUT_MS = 2000
 const BUSY_RETRY_TIMEOUT_MS = 500
 
-type MessageSent = {
-  type: 'MessageSent',
-  msg: EncodedSysex,
+type InternalState = {
+  /**  messages waiting to be sent, ordered from oldest to newest submitted */
+  sendQueue: readonly EncodedSysex[],
+
+  /** lumatone midi i/o */
+  device: MidiDevice,
+
+  commandAwaitingResponse?: EncodedSysex,
+  timeouts?: {
+    receive?: Timeout,
+    retry?: Timeout,
+  }
 }
 
-type MessageRecieved = {
-  type: 'MessageRecieved',
-  msg: EncodedSysex,
-  inResponseTo?: EncodedSysex,
+type SubmitCommandPayload = {
+  command: EncodedSysex,
 }
 
-type NoAnswerToMessage = {
-  type: 'NoAnswer',
-  msg: EncodedSysex,
+type ResponseRecievedPayload = {
+  response: EncodedSysex,
 }
 
-type MidiEvent = MessageSent | MessageRecieved | NoAnswerToMessage
+type InitializedPayload = {
+  device: MidiDevice,
+}
 
-export type MidiEventListener = (event: MidiEvent) => void
+type FSMState = State<"uninitialized">
+  | State<"idle", InternalState> 
+  | State<"response-pending", InternalState> 
+  | State<"device-busy", InternalState>
+
+export interface MidiListener {
+  midiCommandSent?: (command: EncodedSysex) => void,
+  midiResponseRecieved?: (response: EncodedSysex, initiatingCommand: EncodedSysex) => void
+  midiCommandTimedOut?: (command: EncodedSysex) => void,
+  midiUnknownMessageRecieved?: (msg: EncodedSysex) => void,
+}
 
 export class MidiDriver {
-  #enabled: boolean = false
-  #device?: {
-    input: Input,
-    output: Output,
-  }
-  
-  #listeners: MidiEventListener[] = []
-  #sendQueue: EncodedSysex[] = []
-  #msgAwaitingAck?: EncodedSysex
-  #recieveTimeout?: ReturnType<typeof setTimeout>
-  #retryTimeout?: ReturnType<typeof setTimeout>
+  #state: FSMState = { stateName: 'uninitialized' }
+  #nextState
+  #listeners: MidiListener[] = []
 
-  async enable(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const callback = (err?: Error) => {
-        if (err) {
-          return reject(err)
-        }
-        this.#enabled = true
-        resolve()
-      }
-      const useSysex = true
-      WebMidi.enable(callback, useSysex)
-    })
-  }
-
-  #addListener(l: MidiEventListener) {
+  public addListener(l: MidiListener) {
     this.#listeners.push(l)
   }
 
-  #ensureEnabled(): void {
-    if (!this.#enabled) {
-      throw new Error(`WebMidi has not been enabled. Please call enable() before using midi operations.`)
-    }
+  constructor() {
+    const { nextState } = stateMachine()
+      .state('uninitialized')
+      .state<'idle', InternalState>('idle')
+      .state<'response-pending', InternalState>('response-pending')
+      .state<'device-busy', InternalState>('device-busy')
+      .transition('uninitialized', 'idle')
+      .transition('idle', 'idle')
+      .transition('idle', 'response-pending')
+      .transition('response-pending', 'idle')
+      .transition('response-pending', 'response-pending')
+      .transition('response-pending', 'device-busy')
+      .transition('device-busy', 'response-pending')
+      .transition('device-busy', 'device-busy')
+      .transition('device-busy', 'idle')
+      .action<'init', InitializedPayload>('init')
+      .action<'submit-command', SubmitCommandPayload>('submit-command')
+      .action<'response-recieved', ResponseRecievedPayload>('response-recieved')
+      .action('response-timed-out')
+      .action('ready-to-retry')
+      .actionHandler('uninitialized', 'init', (_s, a) => {
+        const { device } = a
+        device.input.addListener('sysex', undefined, this.#onSysexRecieved)
+
+        return {
+          stateName: 'idle',
+          sendQueue: [],
+          device,
+        } as const
+      })
+      .actionHandler('idle', 'submit-command', (s, a) => {
+        const { command } = a
+        const { stateName: _, sendQueue: q, ...internalState } = s
+        return this.#processQueue({ ...internalState, sendQueue: [...q, command] })
+      })
+      .actionHandler('response-pending', 'submit-command', (s, a) => {
+        const { command } = a
+        const { sendQueue, ...state } = s
+        return {
+          sendQueue: [...sendQueue, command],
+          ...state,
+        } as const
+      })
+      .actionHandler('device-busy', 'submit-command', (s, a) => {
+        const { command } = a
+        const { sendQueue, ...state } = s
+        return {
+          sendQueue: [...sendQueue, command],
+          ...state,
+        } as const
+      })
+      .actionHandler('response-pending', 'response-recieved', (s, a) => {
+        const { response } = a
+        const { stateName, commandAwaitingResponse, timeouts: t, ...internalState } = s
+        const timeouts = t ?? {}
+        if (timeouts.receive) {
+          clearTimeout(timeouts.receive)
+          timeouts.receive = undefined
+        }
+        const currentState = {...s, timeouts }
+        if (!commandAwaitingResponse) {
+          debug('recieved unexpected response', response)
+          // send next message or switch to idle state
+          this.#notifyUnexpectedMessage(response)
+          return this.#processQueue(currentState)
+        }
+        if (!messageIsResponseToMessage(commandAwaitingResponse, response)) {
+          debug('recieved response that does not match expected response', response)
+          // send next message or switch to idle state
+          this.#notifyUnexpectedMessage(response)
+          return this.#processQueue(currentState)
+        }
+        const answer = answerState(response)
+        if (answer === FirmwareAnswer.BUSY) {
+          // device is busy
+          // re-enqueue command and set retry timeout
+          const { sendQueue: q, ...s } = internalState
+          const sendQueue = [commandAwaitingResponse, ...q]
+          timeouts.retry = setTimeout(this.#triggerRetry, BUSY_RETRY_TIMEOUT_MS)
+          return {
+            stateName: 'device-busy',
+            sendQueue: sendQueue,
+            timeouts,
+            ...s,
+          } as const
+        }
+        if (answer === FirmwareAnswer.STATE) {
+          debug('Device is in demo mode! All commands will be ignored until demo mode ends.')
+          // send next message or switch to idle state
+          return this.#processQueue(currentState)
+        }
+        // notify listeners
+        this.#notifyResponseRecieved(response, commandAwaitingResponse)
+
+        // send next message or switch to idle state
+        return this.#processQueue(currentState)
+      })
+      .actionHandler('response-pending', 'response-timed-out', (s) => {
+        debug('timed out waiting for response')
+        if (s.timeouts?.receive) {
+          clearTimeout(s.timeouts?.receive)
+          s.timeouts!.receive = undefined
+        }
+        if (s.commandAwaitingResponse) {
+          this.#notifyResponseTimedOut(s.commandAwaitingResponse)
+        }
+        return this.#processQueue(s)
+      })
+      .actionHandler('device-busy', 'ready-to-retry', (s) => {
+        if (s.timeouts?.retry) {
+          clearTimeout(s.timeouts?.retry)
+          s.timeouts!.retry = undefined
+        }
+        return this.#processQueue(s)
+      })
+      .done()
+      this.#nextState = nextState
   }
 
-  #ensureDevice(): void {
-    if (!this.#device) {
-      throw new Error(`No device configured`)
-    }
+  // midi interactions
+
+  #sendToDevice(output: Output, cmd: EncodedSysex): Timeout {
+      output.sendSysex(MANUFACTURER_ID, cmd)
+      return setTimeout(this.#triggerRecieveTimeout, RECIEVE_TIMEOUT_MS)
   }
 
-  getInputs(): Input[] {
-    this.#ensureEnabled()
-    return WebMidi.inputs
+  #onSysexRecieved(e: InputEventSysex) {
+    this.#state = this.#nextState(this.#state, {
+      actionName: 'response-recieved',
+      response: [...e.data]
+    })
   }
 
-  getOutputs(): Output[] {
-    this.#ensureEnabled()
-    return WebMidi.outputs
+  // listener notifications
+  #notifyCommandSent(command: EncodedSysex) {
+    this.#listeners.forEach(l => l.midiCommandSent && 
+      l.midiCommandSent(command))
   }
 
-  async connectToLumatone(deviceId: string): Promise<void> {
-    const input = WebMidi.getInputById(deviceId)
-    const output = WebMidi.getOutputById(deviceId)
-    if (!input || !output) {
-      throw new Error('Unable to connect to device ' + deviceId)
-    }
-    this.#device = { input, output }
-    debug('connecting to device', this.#device)
-    input.addListener('sysex', undefined, this.#sysexRecieved)
-
-    this.#initConnection()
+  #notifyResponseRecieved(response: EncodedSysex, initiatingCommand: EncodedSysex) {
+    this.#listeners.forEach(l => l.midiResponseRecieved && 
+      l.midiResponseRecieved(response, initiatingCommand))
   }
 
-
-  #initConnection() {
-    // TODO: ping lumatone, get firmware version, etc
+  #notifyResponseTimedOut(initiatingCommand: EncodedSysex) {
+    this.#listeners.forEach(l => l.midiCommandTimedOut &&
+      l.midiCommandTimedOut(initiatingCommand))
   }
 
-  sendSysex(msg: EncodedSysex){
-    this.#ensureDevice()
-    this.#sendQueue.push(msg)
-    this.#sendNextMessage()
+  #notifyUnexpectedMessage(msg: EncodedSysex) {
+    this.#listeners.forEach(l => l.midiUnknownMessageRecieved &&
+      l.midiUnknownMessageRecieved(msg))
   }
 
-  #sendNextMessage() {
-    this.#ensureDevice()
-    if (this.#msgAwaitingAck) {
-      // don't send if we're awaiting a response. sendNextMessage will be triggered again
-      // in the response handler after clearing #msgAwaitingAck
-      debug('sendNextMessage', 'not sending message - awaiting response to previous message')
-      return
-    }
-
-    if (this.#retryTimeout) {
-      // don't send if we're waiting to retry because the device sent us a BUSY signal
-      debug('sendNextMessage', 'not sending, awaiting retry timeout')
-      return
-    }
-
-    const msg = this.#sendQueue.shift()
-    if (!msg) {
-      return
-    }
-
-    if (this.#recieveTimeout) {
-      clearTimeout(this.#recieveTimeout)
-    }
-
-    this.#recieveTimeout = setTimeout(this.#recieveTimeoutHandler, RECIEVE_TIMEOUT_MS)
-    this.#msgAwaitingAck = msg
-    this.#device?.output.sendSysex(MANUFACTURER_ID, msg)
-    this.#notifyListners({ type: 'MessageSent', msg })
+  // state triggers
+  #triggerRetry() {
+    this.#state = this.#nextState(this.#state, { actionName: 'ready-to-retry' })
   }
 
-
-  #sysexRecieved(e: InputEventSysex) {
-    const incoming = [...e.data]
-    this.#notifyListners({ type: 'MessageRecieved', msg: incoming, inResponseTo: this.#msgAwaitingAck })
-    
-    if (!this.#msgAwaitingAck) {
-      debug('unexpected sysex message received, ignoring:', e)
-      return
-    }
-
-    if (!messageIsResponseToMessage(this.#msgAwaitingAck, incoming)) {
-      debug('received message that does not match pending command. ignoring:', e)
-      return
-    }
-
-    if (this.#recieveTimeout) {
-      clearTimeout(this.#recieveTimeout)
-    }
-
-    if (incoming.length < 6) {
-      debug('recieved msg with invalid length', incoming.length)
-      return
-    }
-    const answerState = incoming[5]
-    if (answerState === FirmwareAnswer.STATE) {
-      debug('device is in demo mode')
-      return
-    }
-    if (answerState === FirmwareAnswer.BUSY) {
-      this.#sendQueue.unshift(this.#msgAwaitingAck)
-      this.#msgAwaitingAck = undefined
-      this.#retryTimeout = setTimeout(this.#busyTimeoutHandler, BUSY_RETRY_TIMEOUT_MS)
-      return
-    }
-
-    this.#msgAwaitingAck = undefined
-    this.#sendNextMessage()
+  #triggerRecieveTimeout() {
+    this.#state = this.#nextState(this.#state, { actionName: 'response-timed-out' })
   }
 
-  #recieveTimeoutHandler() {
-    this.#recieveTimeout = undefined
-    if (!this.#msgAwaitingAck) {
-      debug('recieve timeout fired, but no message awaiting ack. this is probably a bug... did you forget to cancel a timeout?')
-      return
+  // message queue processor
+  // returns 'idle' state if no commands are queued to send
+  // If commands are pending, sends to midi device and sets response timeout,
+  // then returns 'response-pending' state
+  #processQueue(s: InternalState): State<'idle', InternalState> | State<'response-pending', InternalState> {
+    const { sendQueue: q, timeouts: t, ...internalState } = s 
+    const [cmd, ...sendQueue] = q
+    if (!cmd) {
+      return { stateName: 'idle', ...s } as const
     }
-    this.#notifyListners({ type: 'NoAnswer', msg: this.#msgAwaitingAck })
-    this.#msgAwaitingAck = undefined
+    const timeouts = t ?? {}
+    timeouts.receive = this.#sendToDevice(s.device.output, cmd)
+    this.#notifyCommandSent(cmd)
+    return {
+      stateName: 'response-pending',
+      ...internalState,
+      sendQueue,
+      timeouts,
+      commandAwaitingResponse: cmd,
+    } as const
   }
+}
 
-  #busyTimeoutHandler() {
-    this.#retryTimeout = undefined
-    this.#sendNextMessage()
+function answerState(incoming: EncodedSysex): FirmwareAnswer | undefined {
+  if (incoming.length < 6) {
+    debug('recieved msg with invalid length', incoming.length)
+    return
   }
-
-  #notifyListners(e: MidiEvent) {
-    this.#listeners.forEach(handle => handle(e))
-  }
+  const answerState = incoming[5]
+  return answerState as FirmwareAnswer
 }

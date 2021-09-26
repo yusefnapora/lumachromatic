@@ -1,6 +1,8 @@
 import Sentence from 'sysex'
 
-import type { Command, BoardIndex } from './constants'
+import { MANUFACTURER_ID, PAYLOAD_INIT } from './constants'
+import type { CommandId, BoardIndex } from './constants'
+import { ErrorId } from './errors'
 export type EncodedSysex = number[]
 
 
@@ -9,7 +11,7 @@ export type EncodedSysex = number[]
 //   return s.encode({ boardIndex, cmd, data1: data1 ?? 0, data2: data2 ?? 0, data3: data3 ?? 0, data4: data4 ?? 0 })
 // }
 
-export function createSysEx(boardIndex: BoardIndex, cmd: Command, ...data: number[]): EncodedSysex {
+export function createSysEx(boardIndex: BoardIndex, cmd: CommandId, ...data: number[]): EncodedSysex {
   const dataStr = data.map(toTwoHexDigits).join(' ')  
   const s = new Sentence('boardIndex cmd ' + dataStr)
   return s.encode({ boardIndex, cmd })
@@ -18,23 +20,23 @@ export function createSysEx(boardIndex: BoardIndex, cmd: Command, ...data: numbe
 /**
  * Creates a sysex message that sets a boolean toggle.
  */
- export function createSysExToggle(boardIndex: BoardIndex, cmd: Command, state: boolean): EncodedSysex {
+ export function createSysExToggle(boardIndex: BoardIndex, cmd: CommandId, state: boolean): EncodedSysex {
   return createSysEx(boardIndex, cmd, state ? 1 : 0)
 }
 
-export function createExtendedKeyColourSysEx(boardIndex: BoardIndex, cmd: Command, keyIndex: number, red: number, green: number, blue: number): EncodedSysex {
+export function createExtendedKeyColourSysEx(boardIndex: BoardIndex, cmd: CommandId, keyIndex: number, red: number, green: number, blue: number): EncodedSysex {
   const s = new Sentence('boardIndex cmd keyIndex redUpper redLower greenUpper greenLower blueUpper blueLower')
   const colorPairs = toRGBPairs(red, green, blue)
   return s.encode({boardIndex, cmd, keyIndex, ...colorPairs })
 }
 
-export function createExtendedMacroColourSysEx(cmd: Command, red: number, green: number, blue: number): EncodedSysex {
+export function createExtendedMacroColourSysEx(cmd: CommandId, red: number, green: number, blue: number): EncodedSysex {
   const s = new Sentence('00 cmd redUpper redLower greenUpper greenLower blueUpper blueLower')
   const colorPairs = toRGBPairs(red, green, blue)
   return s.encode({ cmd, ...colorPairs })
 }
 
-export function createTableSysEx(cmd: Command, table: number[]): EncodedSysex {
+export function createTableSysEx(cmd: CommandId, table: number[]): EncodedSysex {
   const tableDigits = table.map(toTwoHexDigits).join(' ')
   const s = new Sentence('00 cmd ' + tableDigits)
   return s.encode({ cmd })
@@ -56,6 +58,32 @@ export function messageIsResponseToMessage(outgoing: EncodedSysex, incoming: Enc
 
 export function fromMidiData(data: Uint8Array): EncodedSysex {
   return [...data]
+}
+
+export function isLumatoneMessage(msg: Uint8Array | EncodedSysex) {
+  if (msg instanceof Uint8Array) {
+    msg = fromMidiData(msg)
+  }
+  if (msg.length < 3) {
+    return false
+  }
+  for (let i = 0; i < 3; i++) {
+    if (msg[i] !== MANUFACTURER_ID[i]) {
+      return false
+    }
+  }
+  return true
+}
+
+export function validatePayloadLength(msg: EncodedSysex, length: number): ErrorId {
+  const expected = PAYLOAD_INIT + length
+  if (msg.length === expected) {
+    return ErrorId.NoError
+  }
+  if (msg.length < expected) {
+    return ErrorId.MessageTooShort
+  }
+  return ErrorId.MessageTooLong
 }
 
 // --- helpers

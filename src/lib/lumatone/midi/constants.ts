@@ -56,7 +56,7 @@ System exclusive command bytes
 ==============================================================================
 */
 
-export enum Command {
+export enum CommandId {
 
 // Start support at 55-keys firmware version, Developmental versions
  CHANGE_KEY_NOTE = 0x00,

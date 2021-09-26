@@ -1,6 +1,14 @@
 import decamelize from 'decamelize'
 
-export enum FirmwareError {
+export class FirmwareError extends Error {
+  errorId: ErrorId
+  constructor(errorId: ErrorId, msg?: string) {
+    super(errorMessage(errorId) + msg ? ' ' + msg : '')
+    this.errorId = errorId
+  }
+}
+
+export enum ErrorId {
   NoError = 0,
   NoMidiOutputSet,
   DeviceIsBusy,
@@ -16,8 +24,8 @@ export enum FirmwareError {
   ExternalError
 }
 
-export const errorMessage = (e: FirmwareError): string => 
-  toSentenceCase(FirmwareError[e])
+export const errorMessage = (e: ErrorId): string => 
+  toSentenceCase(ErrorId[e])
 
 const toSentenceCase = (s: string): string => {
   const s2 = decamelize(s, { separator: ' ' })

@@ -1,4 +1,4 @@
-import { Command as C, BoardIndex, TEST_ECHO } from './constants'
+import { CommandId as C, BoardIndex, TEST_ECHO } from './constants'
 import { createSysEx, createSysExToggle, createTableSysEx, createExtendedKeyColourSysEx, createExtendedMacroColourSysEx } from './sysex'
 import type { EncodedSysex } from './sysex'
 
