@@ -1,4 +1,3 @@
-import WebMidi from 'webmidi'
 import { stateMachine, State, Action } from 'ts-checked-fsm'
 import Debug from 'debug'
 

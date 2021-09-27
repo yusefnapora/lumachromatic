@@ -4,9 +4,41 @@ import { KeyCoordinates } from '../coordinates'
 import type { Scale as ScaleT } from '@tonaljs/scale'
 import type Palette from '../Palette'
 import type { ToneMap } from './ToneMap'
+import { HexColor } from '../../types'
+import { LumatoneKeyType } from './midi/constants'
 
-function singleBoardConfig(boardIndex: number = 0, toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined): string {
-  const keyConfigs: Record<number, string> = {}
+export type LumatoneKeyConfig = {
+  keyNum: number,
+  keyType: LumatoneKeyType,
+  color: HexColor,
+  midiNoteOrCC: number,
+  midiChannel: number,
+}
+
+export type BoardConfig = {
+  boardIndex: number,
+  keys: LumatoneKeyConfig[],
+}
+
+export type DeviceConfig = {
+  boards: BoardConfig[]
+  // TODO: velocity curves, other global stuff
+}
+
+function configToIni(config: BoardConfig): string {
+  let lines = [`[Board${config.boardIndex}]`]
+  for (const k of config.keys) {
+    lines.push(
+      `Key_${k.keyNum}=${k.midiNoteOrCC}`,
+      `Chan_${k.keyNum}=${k.midiChannel}`,
+      `Col_${k.keyNum}=${k.color}`,
+    )
+  }
+  return lines.join('\n')
+}
+
+function singleBoardConfig(boardIndex: number = 0, toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined): BoardConfig {
+  const keys: LumatoneKeyConfig[] = []
   for (const c of KeyCoordinates.allCoordinates()) {
     const keyNum = KeyCoordinates.keyNumber(c)
     if (keyNum == null) {
@@ -24,33 +56,29 @@ function singleBoardConfig(boardIndex: number = 0, toneMap: ToneMap, palette: Pa
       continue
     }
 
-    const midiNote = Note.get(keyDef.note).midi
-    if (midiNote == null) {
+    const midiNoteOrCC = Note.get(keyDef.note).midi
+    if (midiNoteOrCC == null) {
       console.warn('no midi note found for:', keyDef.note)
       continue
     }
     const midiChannel = 1 // TODO: multiple channels
-    keyConfigs[keyNum] = [
-      `Key_${keyNum}=${midiNote}`,
-      `Chan_${keyNum}=${midiChannel}`,
-      `Col_${keyNum}=${color}`
-    ].join('\n')
+    const keyType = LumatoneKeyType.NoteOnNoteOff // TODO: other key types
+    keys[keyNum] = { midiNoteOrCC, midiChannel, color, keyNum , keyType }
   }
   // console.log('lumatone configs', keyConfigs)
 
-  const lines = [`[Board${boardIndex}]`]
-  for (let i = 0; i < 56; i++) {
-    const cfg = keyConfigs[i] || ''
-    lines.push(cfg)
+  return { boardIndex, keys }
+}
+
+export function lumatoneDeviceConfig(toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined, boardTranspose: number = 12): DeviceConfig {
+  const boards: BoardConfig[] = []
+  for (let i = 0; i < 5; i++) {
+    boards.push(singleBoardConfig(i, toneMap.transposed(boardTranspose * i), palette, scale))
   }
-  lines.push('')
-  return lines.join('\n')
+  return { boards }
 }
 
 export function exportLumatoneIni(toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined, boardTranspose: number = 12): string {
-  let configs = []
-  for (let i = 0; i < 5; i++) {
-    configs.push(singleBoardConfig(i, toneMap.transposed(boardTranspose * i), palette, scale))
-  }
-  return configs.join('\n')
+  const { boards } = lumatoneDeviceConfig(toneMap, palette, scale, boardTranspose)
+  return boards.map(configToIni).join('\n')
 }

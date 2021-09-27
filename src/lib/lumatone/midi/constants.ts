@@ -50,6 +50,15 @@ export const TEST_ECHO   = 0x7F // Should not be returned by Lumatone = firmware
 
 // export const SERIAL_55_KEYS = "00 00 00 00 00 = 00"
 
+export enum LumatoneKeyType
+{
+	NoteOnNoteOff        = 1,
+	ContinuousController = 2,
+	LumaTouch            = 3,
+	Disabled             = 4
+}
+
+
 /*
 ==============================================================================
 System exclusive command bytes
