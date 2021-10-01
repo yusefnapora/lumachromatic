@@ -4,6 +4,7 @@ import { saveAs } from 'file-saver'
 import ParamsContext, { defaultParams } from './context/params'
 import ColorWheel from './components/ColorWheel'
 import ParamsPanel from './components/ParamsPanel'
+import MidiPanel from './components/MidiPanel'
 import MultiBoard from './components/MultiBoard'
 
 import { exportLumatoneIni } from './lib/lumatone/export'
@@ -40,6 +41,7 @@ function App() {
         <div className="HarmonyControls">
           <ColorWheel radius={300} />
           <ParamsPanel onChange={onChange} exportReqested={onExport} />
+          <MidiPanel/>
         </div>
         <div className="BoardContainer">
           <MultiBoard {...{ geometry, numBoards: 3}} />

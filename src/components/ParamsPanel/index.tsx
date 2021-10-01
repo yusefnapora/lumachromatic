@@ -16,7 +16,7 @@ interface Props {
 
 export default function ParamsPanel(props: Props): React.ReactElement {
   return (
-    <div className='.ParamsPanel' >
+    <div className='ParamsPanel' >
       <Formik 
         initialValues={{
           tonicNote: 'C',

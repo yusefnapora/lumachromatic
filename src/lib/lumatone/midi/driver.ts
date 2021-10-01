@@ -2,7 +2,7 @@ import { stateMachine, State, Action } from 'ts-checked-fsm'
 import Debug from 'debug'
 
 import { MANUFACTURER_ID, FirmwareAnswer } from './constants'
-import { getCommandId, messageIsResponseToMessage } from './sysex'
+import { getCommandId, isLumatoneMessage, messageIsResponseToMessage } from './sysex'
 
 import type { MidiDevice  } from './device'
 import type { InputEventSysex, Output } from 'webmidi'
@@ -226,6 +226,19 @@ export class MidiDriver {
    */
   #onSysexRecieved(e: InputEventSysex) {
     debug('sysex recieved', getCommandId(e.data))
+    let msg = [...e.data]
+
+    // trim the "sysex start" and "sysex end" marker bytes
+    if (msg[0] === 0xF0) {
+      msg = msg.slice(1)
+    }
+    if (msg[msg.length-1] === 0x7F) {
+      msg = msg.slice(0, -1)
+    }
+    if (!isLumatoneMessage(msg)) {
+      debug('recieved non-lumatone message')
+    }
+
     this.#state = this.#nextState(this.#state, {
       actionName: 'response-recieved',
       response: [...e.data]

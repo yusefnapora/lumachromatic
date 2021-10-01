@@ -79,17 +79,15 @@ export function createTableSysex(cmd: CommandId, table: number[]): EncodedSysex 
  * @returns true if `incoming` is a valid response to `outgoing`
  */
 export function messageIsResponseToMessage(outgoing: EncodedSysex, incoming: EncodedSysex): boolean {
-  if (outgoing.length < (CMD_ID+1) || incoming.length < (CMD_ID+1)) {
+  if (!isLumatoneMessage(incoming)) {
     return false
   }
-  // command responses have the same manufacturer id, board index, and command id as the command they
-  // are in response to, so the first 5 bytes will be equal
-  for (let i = 0; i <= CMD_ID; i++) {
-    if (outgoing[i] !== incoming[i]) {
-      return false
-    }
-  }
-  return true
+
+  // outgoing messages don't include manufacturer id header,
+  // so we prepend it here to make comparison simpler
+  const o = [...MANUFACTURER_ID, ...outgoing]
+
+  return o[CMD_ID] === incoming[CMD_ID] && o[BOARD_IND] === incoming[BOARD_IND]
 }
 
 /**
