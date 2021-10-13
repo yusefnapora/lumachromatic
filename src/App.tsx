@@ -39,7 +39,7 @@ function App() {
     <ParamsContext.Provider value={params} >
       <div className="App">
         <div className="HarmonyControls">
-          <ColorWheel radius={300} />
+          <ColorWheel radius={150} />
           <ParamsPanel onChange={onChange} exportReqested={onExport} />
           <MidiPanel/>
         </div>

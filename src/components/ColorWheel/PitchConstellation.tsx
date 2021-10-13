@@ -17,6 +17,7 @@ function PitchConstellation(props: Props): React.ReactElement {
   const { scale, radius, center, palette } = props
   const degreesPerSemitone = 360 / 12
   console.log('scale',scale)
+  const strokeWidth = radius * 0.25
 
   const lineProps: PitchLineProps[] = []
   for (let i = 0; i < scale.notes.length; i++) {
@@ -25,7 +26,7 @@ function PitchConstellation(props: Props): React.ReactElement {
     const interval = Interval.get(intervalName)
     const semitones = interval.semitones!
     const angle = degreesPerSemitone * semitones
-    lineProps.push({ angle, interval: intervalName, center, radius, color: palette.primary(note.chroma!) })
+    lineProps.push({ strokeWidth, angle, interval: intervalName, center, radius, color: palette.primary(note.chroma!) })
   }
   scale.intervals.map(i => {
 
@@ -39,13 +40,12 @@ function PitchConstellation(props: Props): React.ReactElement {
 }
 
 
-interface PitchLineProps { center: Point, radius: number, angle: number, interval: string, color: HexColor }
+interface PitchLineProps { center: Point, radius: number, angle: number, interval: string, color: HexColor, strokeWidth: number }
 
 function pitchLine(props: PitchLineProps) {
-  const { center, radius, angle, interval, color } = props
+  const { center, radius, angle, interval, color, strokeWidth } = props
   const endPoint = polarToCartesian(center, radius, angle)
   // console.log('pitch line', props, center, endPoint)
-  const strokeWidth = 60
   const opacity = 0.6
   return <line x1={center.x} y1={center.y} x2={endPoint.x} y2={endPoint.y} key={interval} stroke={color} fill={color} strokeWidth={strokeWidth} strokeLinecap="round" opacity={opacity} />
 }
