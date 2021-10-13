@@ -1,18 +1,8 @@
 import { Note, Interval } from '@tonaljs/tonal'
 import { CoordinateMap } from '../coordinates'
-import type { OffsetCoord } from '../../types'
+import type { OffsetCoord, ToneMap, KeyDefinition, KeyGenerator } from '../../types'
 
-export interface KeyDefinition {
-  note: string, // TODO: maybe use Note type from tonaljs
-}
 
-export interface ToneMap {
-  get(c: OffsetCoord): KeyDefinition|undefined
-
-  transposed(semitones: number): ToneMap
-}
-
-export type KeyGenerator = Generator<KeyDefinition>
 
 // const generatorIntervals = ['2m', '4P', '5P', '7M']
 export function *twelveToneGenerator(stepInterval: string = '5P', startNote: string = 'C'): KeyGenerator {

@@ -1,9 +1,23 @@
-import Sentence from 'sysex'
 
 import { CMD_ID, BOARD_IND, MANUFACTURER_ID, PAYLOAD_INIT } from './constants'
 import type { CommandId, BoardIndex } from './constants'
 import { ErrorId, FirmwareError } from './errors'
 export type EncodedSysex = number[] | Uint8Array
+
+
+// FIXME: the sysex module seems to have some kind of circular import internnally that vite's production bundler doesn't like
+// Either replace sysex with hand-rolled encoder or figure out the bundler issue
+
+// import Sentence from 'sysex'
+class Sentence {
+  constructor(s: string) {
+
+  }
+
+  encode(args: any) {
+    return new Uint8Array()
+  }
+}
 
 /**
  * Creates a sysex command payload representing a lumatone command.

@@ -1,9 +1,8 @@
 import React, { useContext } from 'react'
 
 import { KeyCoordinates, stringifyCoord } from '../lib/coordinates'
-import type { ToneMap } from '../lib/lumatone/ToneMap'
+import type { ToneMap, IPalette as Palette } from '../types'
 import type { BoardGeometry } from '../lib/lumatone/BoardGeometry'
-import type Palette from '../lib/Palette'
 import ParamsContext from '../context/params'
 
 

@@ -1,6 +1,5 @@
 import type { Scale as ScaleT } from '@tonaljs/scale'
-import type { ToneMap } from './lib/lumatone/ToneMap'
-import type Palette from './lib/Palette'
+import { RXBArray } from './lib/RXB'
 
 export type Point = { x: number, y: number }
 export type Size = { w: number, h: number }
@@ -13,7 +12,7 @@ export interface HarmonicParams {
 }
 
 export interface ColorParams {
-  palette: Palette,
+  palette: IPalette,
 }
 
 export interface MappingParams {
@@ -34,3 +33,25 @@ export interface OffsetCoord {
   q: number,
   r: number,
 }
+
+export interface IPalette {
+  divisions: Readonly<number>
+  rainbow: RXBArray[]
+
+  primary(index: number): HexColor
+  complementary(index: number, value: number): HexColor
+  neutrals(index: number, value: number, count?: number): HexColor[]
+  colorForNoteName(noteName: string, scale: ScaleT|undefined): HexColor | undefined
+}
+
+export interface KeyDefinition {
+  note: string, // TODO: maybe use Note type from tonaljs
+}
+
+export interface ToneMap {
+  get(c: OffsetCoord): KeyDefinition|undefined
+
+  transposed(semitones: number): ToneMap
+}
+
+export type KeyGenerator = Generator<KeyDefinition>

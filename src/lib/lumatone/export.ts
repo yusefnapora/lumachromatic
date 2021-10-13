@@ -2,8 +2,7 @@ import { Note } from '@tonaljs/tonal'
 import { KeyCoordinates } from '../coordinates'
 
 import type { Scale as ScaleT } from '@tonaljs/scale'
-import type Palette from '../Palette'
-import type { ToneMap } from './ToneMap'
+import type { ToneMap, IPalette as Palette } from '../../types'
 import { HexColor } from '../../types'
 import { LumatoneKeyType } from './midi/constants'
 
