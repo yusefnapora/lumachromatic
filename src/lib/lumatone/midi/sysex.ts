@@ -5,17 +5,26 @@ import { ErrorId, FirmwareError } from './errors'
 export type EncodedSysex = number[] | Uint8Array
 
 
-// FIXME: the sysex module seems to have some kind of circular import internnally that vite's production bundler doesn't like
-// Either replace sysex with hand-rolled encoder or figure out the bundler issue
-
-// import Sentence from 'sysex'
+// inspired by the `sysex` module, which vite sadly doesn't like for some reason...
 class Sentence {
-  constructor(s: string) {
+  #tokens: string[]
 
+  constructor(s: string) {
+    this.#tokens = s.split(/\s+/)
   }
 
-  encode(args: any) {
-    return new Uint8Array()
+  encode(args: Record<string, number>) {
+    const output = new Uint8Array(this.#tokens.length)
+    let i = 0
+    for (const t of this.#tokens) {
+      let v = args[t]
+      if (v === undefined) {
+        v = Number.parseInt(t, 16)
+      }
+      output[i] = v & 0x7F
+      i++
+    }
+    return output
   }
 }
 
