@@ -33,7 +33,7 @@ export default function TerpstraBoard(props: Props): React.ReactElement {
       const fill = palette.colorForNoteName(def.note, scale)
       const label = {
         text: def.note,
-        color: 'black',
+        color: 'white',
         center: geometry.centerPoint(c),
       }
       return { points, key, fill, stroke: 'black', label }

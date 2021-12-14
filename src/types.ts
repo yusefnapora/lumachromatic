@@ -1,4 +1,5 @@
 import type { Scale as ScaleT } from '@tonaljs/scale'
+import { BoardGeometry } from './lib/lumatone/BoardGeometry'
 import { RXBArray } from './lib/RXB'
 
 export type Point = { x: number, y: number }
@@ -19,10 +20,19 @@ export interface MappingParams {
   toneMap: ToneMap
 }
 
+export interface BoardParams {
+  keyDiameter: number
+  keyMargin: number
+  numBoards: number
+
+  geometry: BoardGeometry
+}
+
 export interface AllParams {
   harmonic: HarmonicParams,
   color: ColorParams,
   mapping: MappingParams,
+  board: BoardParams,
 }
 
 /**
