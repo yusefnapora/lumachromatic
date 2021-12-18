@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import DockLayout from 'rc-dock'
 import "rc-dock/dist/rc-dock-dark.css";
+import type { LayoutBase } from 'rc-dock';
 
 import ColorWheel from '../components/ColorWheel'
 import ParamsPanel from '../components/ParamsPanel'
@@ -10,10 +11,12 @@ import ParamsContext, { defaultParams } from '../context/params'
 import { AllParams } from '../types'
 import { exportLumatoneIni } from '../lib/lumatone/export'
 import { BoardGeometry } from '../lib/lumatone/BoardGeometry';
+import { LayoutContext } from '../context/layout';
 
 
 export const MainLayout = () => {
   const [params, setParams] = useState(defaultParams)
+  const [layout, setLayout] = useState<LayoutBase|null>(null)
   
   const onChange = (partialParams: Partial<AllParams>) => {
     const p = {...params, ...partialParams}
@@ -32,7 +35,7 @@ export const MainLayout = () => {
   
     const midiPanel = <MidiPanel />
     const paramsPanel = <ParamsPanel onChange={onChange} exportReqested={onExport} />
-    const colorWheel = <ColorWheel radius={300} />
+    const colorWheel = <ColorWheel radius={150} />
     
     const keyDiameter = 28
     const keyMargin = 2
@@ -72,25 +75,33 @@ export const MainLayout = () => {
             size: 800,
             tabs: [
               { id: 'board', title: 'board', content: board }
-            ]
+            ],
+            panelLock: { panelStyle: 'main' },
           }
         ]
       }
     }
+
+    const layoutChanged = (newLayout: LayoutBase) => {
+      setLayout(newLayout)
+    }
     
     return (
-      <ParamsContext.Provider value={params} >
-        <DockLayout
-        defaultLayout={defaultLayout}
-        style={{
-          position: "absolute",
-          left: 10,
-          top: 10,
-          right: 10,
-          bottom: 10,
-        }}
-        />
-      </ParamsContext.Provider>
+      <LayoutContext.Provider value={layout}>
+        <ParamsContext.Provider value={params} >
+          <DockLayout
+          defaultLayout={defaultLayout}
+          onLayoutChange={layoutChanged}
+          style={{
+            position: "absolute",
+            left: 10,
+            top: 10,
+            right: 10,
+            bottom: 10,
+          }}
+          />
+        </ParamsContext.Provider>
+      </LayoutContext.Provider>
 
       )
     }
