@@ -1,5 +1,5 @@
-import React from "react"
-import HexKey from "../components/HexKey"
+import React from 'react'
+import HexKey from '../components/HexKey'
 import type { Props as HexKeyProps } from '../components/HexKey'
 
 export default {

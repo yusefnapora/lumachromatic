@@ -1,0 +1,27 @@
+export const SCALE_TYPES = [
+  'major',
+  'minor',
+  'harmonic minor',
+  'melodic minor',
+  'augmented',
+  'diminished',
+  'blues',
+  'major blues',
+  'major pentatonic',
+  'minor pentatonic',
+  'chromatic',
+]
+export const NOTES = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B',
+]

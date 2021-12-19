@@ -1,4 +1,3 @@
-
 import type { HexColor } from '../types'
 import RXB from './RXB'
 import type { RXBArray } from './RXB'
@@ -33,7 +32,10 @@ export default class Palette {
     return RXB.neutrals(p, value, count).map(toHex)
   }
 
-  colorForNoteName(noteName: string, scale: Scale|undefined = undefined): HexColor | undefined {
+  colorForNoteName(
+    noteName: string,
+    scale: Scale | undefined = undefined
+  ): HexColor | undefined {
     const note = Note.get(noteName)
     if (!note || note.chroma == null) {
       return undefined

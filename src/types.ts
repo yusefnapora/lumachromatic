@@ -2,9 +2,9 @@ import type { Scale as ScaleT } from '@tonaljs/scale'
 import { BoardGeometry } from './lib/lumatone/BoardGeometry'
 import { RXBArray } from './lib/RXB'
 
-export type Point = { x: number, y: number }
-export type Size = { w: number, h: number }
-export type Rect = { origin: Point, size: Size }
+export type Point = { x: number; y: number }
+export type Size = { w: number; h: number }
+export type Rect = { origin: Point; size: Size }
 
 export type HexColor = string
 
@@ -13,7 +13,7 @@ export interface HarmonicParams {
 }
 
 export interface ColorParams {
-  palette: IPalette,
+  palette: IPalette
 }
 
 export interface MappingParams {
@@ -29,10 +29,10 @@ export interface BoardParams {
 }
 
 export interface AllParams {
-  harmonic: HarmonicParams,
-  color: ColorParams,
-  mapping: MappingParams,
-  board: BoardParams,
+  harmonic: HarmonicParams
+  color: ColorParams
+  mapping: MappingParams
+  board: BoardParams
 }
 
 /**
@@ -40,8 +40,8 @@ export interface AllParams {
  * here: https://www.redblobgames.com/grids/hexagons/#coordinates
  */
 export interface OffsetCoord {
-  q: number,
-  r: number,
+  q: number
+  r: number
 }
 
 export interface IPalette {
@@ -51,15 +51,18 @@ export interface IPalette {
   primary(index: number): HexColor
   complementary(index: number, value: number): HexColor
   neutrals(index: number, value: number, count?: number): HexColor[]
-  colorForNoteName(noteName: string, scale: ScaleT|undefined): HexColor | undefined
+  colorForNoteName(
+    noteName: string,
+    scale: ScaleT | undefined
+  ): HexColor | undefined
 }
 
 export interface KeyDefinition {
-  note: string, // TODO: maybe use Note type from tonaljs
+  note: string // TODO: maybe use Note type from tonaljs
 }
 
 export interface ToneMap {
-  get(c: OffsetCoord): KeyDefinition|undefined
+  get(c: OffsetCoord): KeyDefinition | undefined
 
   transposed(semitones: number): ToneMap
 }

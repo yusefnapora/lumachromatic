@@ -5,8 +5,8 @@ import Palette from '../lib/Palette'
 import { TwelveToneMap } from '../lib/lumatone/ToneMap'
 import { BoardGeometry } from '../lib/lumatone/BoardGeometry'
 
-const defaultHarmonicParams = { 
-  scale: Scale.get('C major')
+const defaultHarmonicParams = {
+  scale: Scale.get('C major'),
 }
 
 const defaultColorParams = {
@@ -14,7 +14,7 @@ const defaultColorParams = {
 }
 
 const defaultMappingParams = {
-  toneMap: TwelveToneMap()
+  toneMap: TwelveToneMap(),
 }
 
 const defaultBoardParams: BoardParams = {
@@ -25,7 +25,7 @@ const defaultBoardParams: BoardParams = {
   get geometry(): BoardGeometry {
     const { keyDiameter, keyMargin } = this
     return new BoardGeometry({ keyDiameter, keyMargin })
-  }
+  },
 }
 
 export const defaultParams = {
@@ -35,6 +35,8 @@ export const defaultParams = {
   board: defaultBoardParams,
 }
 
-const ParamsContext = React.createContext<AllParams>(defaultParams) 
+const ParamsContext = React.createContext<AllParams>(defaultParams)
+
+export const useParamsContext = () => React.useContext(ParamsContext)
 
 export default ParamsContext

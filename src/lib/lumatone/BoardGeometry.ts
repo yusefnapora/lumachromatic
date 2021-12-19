@@ -2,11 +2,10 @@ import type { Point, OffsetCoord, Rect } from '../../types'
 import { hexagonPoints, rotatedRectBounds } from '../drawing'
 import { KeyCoordinates } from '../coordinates'
 
-
 export interface BoardGeometryProps {
-  keyDiameter: number, // indiameter of individual hex key, or distance from center to any corner
-  keyMargin?: number,  // spacing to add between keys, if any. defaults to zero
-  origin?: Point,      // location of top-left point to begin layout from. defaults to 0,0
+  keyDiameter: number // indiameter of individual hex key, or distance from center to any corner
+  keyMargin?: number // spacing to add between keys, if any. defaults to zero
+  origin?: Point // location of top-left point to begin layout from. defaults to 0,0
 }
 
 export class BoardGeometry {
@@ -26,15 +25,15 @@ export class BoardGeometry {
 
   centerPoint(coord: OffsetCoord): Point {
     // center point of "unit key", or key at 0,0
-    const c = { 
-      x: this.#keyMargin + (this.#keyWidth / 2), 
-      y: this.#keyMargin + (this.#keyHeight / 2)
+    const c = {
+      x: this.#keyMargin + this.#keyWidth / 2,
+      y: this.#keyMargin + this.#keyHeight / 2,
     }
 
-    const rowOffset = (coord.r % 2 === 0) ? 0 : (this.rowWidth / 2)
+    const rowOffset = coord.r % 2 === 0 ? 0 : this.rowWidth / 2
 
-    const x = c.x + rowOffset + (coord.q * this.rowWidth)
-    const y = c.y + (coord.r * this.rowHeight)
+    const x = c.x + rowOffset + coord.q * this.rowWidth
+    const y = c.y + coord.r * this.rowHeight
 
     return this._pointWithOrigin({ x, y })
   }
@@ -57,7 +56,7 @@ export class BoardGeometry {
   }
 
   get rowHeight(): number {
-    return (this.keyHeight * 0.75) + this.#keyMargin
+    return this.keyHeight * 0.75 + this.#keyMargin
   }
 
   get rowWidth(): number {
@@ -66,27 +65,35 @@ export class BoardGeometry {
 
   boardWidth(cols: number = 6): number {
     const w = this.#keyWidth + this.#keyMargin
-    return (w * (cols + 0.5))
+    return w * (cols + 0.5)
   }
 
   boardHeight(rows: number = 11): number {
-    const h = (this.#keyHeight * 0.75) + this.#keyMargin
+    const h = this.#keyHeight * 0.75 + this.#keyMargin
     return h * (rows + 0.5)
   }
 
-  rotatedBoundingBox(rotationDegrees: number, cols: number = 6, rows: number = 11): Rect {
-    const rect = { 
-      origin: this.#origin, 
-      size: { 
+  rotatedBoundingBox(
+    rotationDegrees: number,
+    cols: number = 6,
+    rows: number = 11
+  ): Rect {
+    const rect = {
+      origin: this.#origin,
+      size: {
         w: this.boardWidth(cols),
-        h: this.boardHeight(rows) 
-      }
+        h: this.boardHeight(rows),
+      },
     }
     return rotatedRectBounds(rect, rotationDegrees)
   }
 
   withOrigin(pt: Point): BoardGeometry {
-    return new BoardGeometry({ keyDiameter: this.#keyDiameter, keyMargin: this.#keyMargin, origin: pt })
+    return new BoardGeometry({
+      keyDiameter: this.#keyDiameter,
+      keyMargin: this.#keyMargin,
+      origin: pt,
+    })
   }
 
   withOffsetOrigin(pt: Point): BoardGeometry {
