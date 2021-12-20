@@ -23,7 +23,6 @@ export default function TerpstraBoard(props: Props): React.ReactElement {
       harmonic: { scale },
     },
   ] = useParamsContext()
-  console.log('board scale: ', scale)
 
   const keyProps = KeyCoordinates.allCoordinates()
     .map((c) => {

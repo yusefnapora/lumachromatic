@@ -1,17 +1,19 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Note } from '@tonaljs/tonal'
-
-import { useParamsContext } from '../../context/params'
+import type { Scale } from '@tonaljs/scale'
 
 import Wedge from './Wedge'
 import PitchConstellation from './PitchConstellation'
 import { useLayoutContext } from '../../context/layout'
+import { NOTES } from '../../constants'
+import { IPalette } from '../../types'
+import { useParamsContext } from '../../context/params'
 
 interface Props {
   radius: number
+  scale?: Scale
+  palette?: IPalette
 }
-
-const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 export default function ColorWheel(props: Props): React.ReactElement {
   // ref to capture width and height of wrapper div
@@ -19,13 +21,11 @@ export default function ColorWheel(props: Props): React.ReactElement {
   // force re-render when layout changes (e.g. window or dock tab resizes)
   useLayoutContext()
 
+  const [params] = useParamsContext()
+  const scale = props.scale || params.harmonic.scale
+  const palette = props.palette || params.color.palette
+
   let { radius } = props
-  const [
-    {
-      harmonic: { scale },
-      color: { palette },
-    },
-  ] = useParamsContext()
   const divisions = palette.divisions
 
   if (wrapper.current) {

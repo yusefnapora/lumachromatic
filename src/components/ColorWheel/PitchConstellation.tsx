@@ -16,7 +16,6 @@ interface Props {
 function PitchConstellation(props: Props): React.ReactElement {
   const { scale, radius, center, palette } = props
   const degreesPerSemitone = 360 / 12
-  console.log('scale', scale)
   const strokeWidth = radius * 0.25
 
   const lineProps: PitchLineProps[] = []

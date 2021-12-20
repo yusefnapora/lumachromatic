@@ -46,10 +46,10 @@ export default function MultiBoard(props: Props): React.ReactElement {
   )
   const tx = -1 * bounds.origin.x
   const ty = 0 //(bounds.origin.y)
-  console.log('w/h', w, h)
-  console.log(
-    `bounds: ${bounds.origin.x}, ${bounds.origin.y} / ${bounds.size.w}, ${bounds.size.h}`
-  )
+  // console.log('w/h', w, h)
+  // console.log(
+  //   `bounds: ${bounds.origin.x}, ${bounds.origin.y} / ${bounds.size.w}, ${bounds.size.h}`
+  // )
 
   const transform = `rotate(${rot}, ${w / 2}, ${
     h / 2
