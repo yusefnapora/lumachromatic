@@ -11,13 +11,14 @@ interface Props {
   geometry: BoardGeometry
 }
 
-
 export default function MultiBoard(props: Props): React.ReactElement {
   const numBoards = props.numBoards || 2
-  const [{
-    mapping: { toneMap: tm },
-    color: { palette },
-  }] = useParamsContext()
+  const [
+    {
+      mapping: { toneMap: tm },
+      color: { palette },
+    },
+  ] = useParamsContext()
 
   const { geometry: geo } = props
   const boards = []
@@ -54,16 +55,12 @@ export default function MultiBoard(props: Props): React.ReactElement {
     h / 2
   }) translate(${tx}, ${ty}) `
   return (
-    <ScrollContainer 
-      className='scroll-container'
-      hideScrollbars={false}
-      >
-      <div style={{      width: bounds.size.w,
-      height: bounds.size.h,}}>
+    <ScrollContainer className="scroll-container" hideScrollbars={false}>
+      <div style={{ width: bounds.size.w, height: bounds.size.h }}>
         <svg width={bounds.size.w} height={h}>
           <g transform={transform}>{...boards}</g>
         </svg>
       </div>
-      </ScrollContainer>
+    </ScrollContainer>
   )
 }

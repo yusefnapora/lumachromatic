@@ -32,23 +32,26 @@ export default class Palette {
     return RXB.neutrals(p, value, count).map(toHex)
   }
 
-  noteColors(note: string): { primary: HexColor, muted: HexColor, complementary: (value: number) => HexColor} {
+  noteColors(note: string): {
+    primary: HexColor
+    muted: HexColor
+    complementary: (value: number) => HexColor
+  } {
     const n = Note.get(note)
     if (!n || n.chroma == null) {
       throw new Error('unknown note ' + note)
     }
-    
+
     const index = n.chroma
     const primary = this.primary(index)
     const hsla = tinycolor(primary).toHsl()
     hsla.l *= 0.3
     const muted = tinycolor(hsla).toHexString()
-    
-    
+
     return {
       primary,
       muted,
-      complementary: (value) => this.complementary(index, value)
+      complementary: (value) => this.complementary(index, value),
     }
   }
 

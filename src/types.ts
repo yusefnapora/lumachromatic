@@ -55,7 +55,11 @@ export interface IPalette {
     noteName: string,
     scale: ScaleT | undefined
   ): HexColor | undefined
-  noteColors(note: string): { primary: HexColor, muted: HexColor, complementary: (value: number) => HexColor}
+  noteColors(note: string): {
+    primary: HexColor
+    muted: HexColor
+    complementary: (value: number) => HexColor
+  }
 }
 
 export interface KeyDefinition {

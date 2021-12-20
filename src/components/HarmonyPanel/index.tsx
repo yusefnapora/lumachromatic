@@ -7,11 +7,11 @@ export default function HarmonyPanel() {
   const [{ harmonic }, updateParams] = useParamsContext()
 
   const onTonicNoteClicked = (note: string) => {
-      const name = `${note} ${harmonic.scale.type}`
-      const scale = Scale.get(name)
-      if (scale) {
-          updateParams({ harmonic: { ...harmonic, scale } })
-      }
+    const name = `${note} ${harmonic.scale.type}`
+    const scale = Scale.get(name)
+    if (scale) {
+      updateParams({ harmonic: { ...harmonic, scale } })
+    }
   }
 
   return (
@@ -24,7 +24,10 @@ export default function HarmonyPanel() {
         height: '100%',
       }}
     >
-      <ScaleCard scale={harmonic.scale} onTonicNoteClicked={onTonicNoteClicked} />
+      <ScaleCard
+        scale={harmonic.scale}
+        onTonicNoteClicked={onTonicNoteClicked}
+      />
     </div>
   )
 }

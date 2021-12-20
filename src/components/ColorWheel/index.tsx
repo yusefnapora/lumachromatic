@@ -20,10 +20,12 @@ export default function ColorWheel(props: Props): React.ReactElement {
   useLayoutContext()
 
   let { radius } = props
-  const [{
-    harmonic: { scale },
-    color: { palette },
-  }] = useParamsContext()
+  const [
+    {
+      harmonic: { scale },
+      color: { palette },
+    },
+  ] = useParamsContext()
   const divisions = palette.divisions
 
   if (wrapper.current) {

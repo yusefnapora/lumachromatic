@@ -5,14 +5,16 @@ import { NOTES } from '../../constants'
 import { useParamsContext } from '../../context/params'
 
 interface Props {
-  scale: Scale,
+  scale: Scale
   onTonicNoteClicked?: (note: string) => any
 }
 
 export default function ScaleCard(props: Props) {
-  const [{
-    color: { palette },
-  }] = useParamsContext()
+  const [
+    {
+      color: { palette },
+    },
+  ] = useParamsContext()
   const { scale } = props
 
   const tonic = scale.tonic || 'C'
@@ -21,7 +23,7 @@ export default function ScaleCard(props: Props) {
   const size = '3em'
 
   const noteClicked = (note: string) => {
-      props.onTonicNoteClicked && props.onTonicNoteClicked(note)
+    props.onTonicNoteClicked && props.onTonicNoteClicked(note)
   }
 
   const tonicMenu = (
@@ -47,24 +49,25 @@ export default function ScaleCard(props: Props) {
     >
       {NOTES.map((n) => {
         const colors = palette.noteColors(n)
-        return <div
-          key={n}
-          style={{
-            width: size,
-            height: size,
-            borderRadius: '50%',
-            backgroundColor: colors.primary,
-            color: colors.complementary(0),
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-
-          onClick={() => noteClicked(n)}
-        >
-          {n}
-        </div>
-})}
+        return (
+          <div
+            key={n}
+            style={{
+              width: size,
+              height: size,
+              borderRadius: '50%',
+              backgroundColor: colors.primary,
+              color: colors.complementary(0),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onClick={() => noteClicked(n)}
+          >
+            {n}
+          </div>
+        )
+      })}
     </Planet>
   )
 

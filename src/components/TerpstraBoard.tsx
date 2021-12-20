@@ -18,9 +18,11 @@ interface Props {
 export default function TerpstraBoard(props: Props): React.ReactElement {
   const { geometry, toneMap, palette } = props
 
-  const [{
-    harmonic: { scale },
-  }] = useParamsContext()
+  const [
+    {
+      harmonic: { scale },
+    },
+  ] = useParamsContext()
   console.log('board scale: ', scale)
 
   const keyProps = KeyCoordinates.allCoordinates()
