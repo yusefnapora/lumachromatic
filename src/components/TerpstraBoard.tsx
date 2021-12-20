@@ -1,9 +1,9 @@
-import React, { useContext } from 'react'
+import React from 'react'
 
 import { KeyCoordinates, stringifyCoord } from '../lib/coordinates'
 import type { ToneMap, IPalette as Palette } from '../types'
 import type { BoardGeometry } from '../lib/lumatone/BoardGeometry'
-import ParamsContext from '../context/params'
+import { useParamsContext } from '../context/params'
 
 interface Props {
   geometry: BoardGeometry
@@ -18,9 +18,9 @@ interface Props {
 export default function TerpstraBoard(props: Props): React.ReactElement {
   const { geometry, toneMap, palette } = props
 
-  const {
+  const [{
     harmonic: { scale },
-  } = useContext(ParamsContext)
+  }] = useParamsContext()
   console.log('board scale: ', scale)
 
   const keyProps = KeyCoordinates.allCoordinates()

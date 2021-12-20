@@ -55,8 +55,8 @@ export const MainLayout = () => {
   )
 
   const paramsLayout = {
-    mode: 'vertical' as const,
-    size: 200,
+    mode: 'horizontal' as const,
+    size: 400,
 
     children: [
       {
@@ -74,14 +74,14 @@ export const MainLayout = () => {
 
   const defaultLayout = {
     dockbox: {
-      mode: 'horizontal' as const,
+      mode: 'vertical' as const,
       children: [
-        paramsLayout,
         {
           size: 800,
           tabs: [{ id: 'board', title: 'board', content: board }],
           panelLock: { panelStyle: 'main' },
         },
+        paramsLayout,
       ],
     },
   }
@@ -92,7 +92,7 @@ export const MainLayout = () => {
 
   return (
     <LayoutContext.Provider value={layout}>
-      <ParamsContext.Provider value={params}>
+      <ParamsContext.Provider value={[params, onChange]}>
         <DockLayout
           defaultLayout={defaultLayout}
           onLayoutChange={layoutChanged}

@@ -1,21 +1,23 @@
 import React, { useContext } from 'react'
+import ScrollContainer from 'react-indiana-drag-scroll'
 
 import type { BoardGeometry } from '../lib/lumatone/BoardGeometry'
 import TerpstraBoard from './TerpstraBoard'
 import { rotatedRectBounds } from '../lib/drawing'
-import ParamsContext from '../context/params'
+import { useParamsContext } from '../context/params'
 
 interface Props {
   numBoards?: number
   geometry: BoardGeometry
 }
 
+
 export default function MultiBoard(props: Props): React.ReactElement {
   const numBoards = props.numBoards || 2
-  const {
+  const [{
     mapping: { toneMap: tm },
     color: { palette },
-  } = useContext(ParamsContext)
+  }] = useParamsContext()
 
   const { geometry: geo } = props
   const boards = []
@@ -52,8 +54,16 @@ export default function MultiBoard(props: Props): React.ReactElement {
     h / 2
   }) translate(${tx}, ${ty}) `
   return (
-    <svg width={bounds.size.w} height={h}>
-      <g transform={transform}>{...boards}</g>
-    </svg>
+    <ScrollContainer 
+      className='scroll-container'
+      hideScrollbars={false}
+      >
+      <div style={{      width: bounds.size.w,
+      height: bounds.size.h,}}>
+        <svg width={bounds.size.w} height={h}>
+          <g transform={transform}>{...boards}</g>
+        </svg>
+      </div>
+      </ScrollContainer>
   )
 }

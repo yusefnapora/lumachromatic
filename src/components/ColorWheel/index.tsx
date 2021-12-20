@@ -1,9 +1,7 @@
-import React, { useContext, useState, useRef } from 'react'
-import { Scale, Note } from '@tonaljs/tonal'
+import React, { useRef } from 'react'
+import { Note } from '@tonaljs/tonal'
 
-import ParamsContext from '../../context/params'
-
-import type Palette from '../../lib/Palette'
+import { useParamsContext } from '../../context/params'
 
 import Wedge from './Wedge'
 import PitchConstellation from './PitchConstellation'
@@ -22,10 +20,10 @@ export default function ColorWheel(props: Props): React.ReactElement {
   useLayoutContext()
 
   let { radius } = props
-  const {
+  const [{
     harmonic: { scale },
     color: { palette },
-  } = useContext(ParamsContext)
+  }] = useParamsContext()
   const divisions = palette.divisions
 
   if (wrapper.current) {

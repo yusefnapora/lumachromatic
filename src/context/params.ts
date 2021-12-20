@@ -35,7 +35,10 @@ export const defaultParams = {
   board: defaultBoardParams,
 }
 
-const ParamsContext = React.createContext<AllParams>(defaultParams)
+type ParamUpdateFn = (p: Partial<AllParams>) => any
+
+const ParamsContext = React.createContext<[AllParams, ParamUpdateFn]>(
+  [defaultParams, () => {}])
 
 export const useParamsContext = () => React.useContext(ParamsContext)
 
