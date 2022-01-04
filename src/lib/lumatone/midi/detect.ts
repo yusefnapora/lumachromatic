@@ -32,12 +32,15 @@ export async function detectDevice(): Promise<MidiDevice> {
           input.removeListener('sysex', undefined, listener)
           return
         }
-        if (!isLumatoneMessage(e.data)) {
-          debug('recieved non-lumatone response on input', e.target.name)
+        const msg = e.data.slice(1, e.data.length-1)
+        debug('received sysex messageon input ', e.target.name + ' / ' + e.target.id + ': ', toHex(msg))
+        if (!isLumatoneMessage(msg)) {
+          debug('recieved non-lumatone response on input', e.target.name + ' / ' + e.target.id)
+          debug(msg)
           input.removeListener('sysex', undefined, listener)
           return
         }
-        const pingResult = decodePing([...e.data])
+        const pingResult = decodePing([...msg])
         if (!isOk(pingResult)) {
           debug('invalid ping response: ', errorMessage(pingResult.error))
           return
@@ -48,6 +51,7 @@ export async function detectDevice(): Promise<MidiDevice> {
           debug('ping response contained invalid output index ' + outputId)
           return
         }
+        
         found = true
         input.removeListener('sysex', undefined, listener)
         clearTimeout(timeout)
@@ -71,4 +75,9 @@ export async function detectDevice(): Promise<MidiDevice> {
       outputs[i].sendSysex(MANUFACTURER_ID, [...msg])
     }
   })
+}
+
+
+function toHex(buffer: Uint8Array) {
+  return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join(' ');
 }

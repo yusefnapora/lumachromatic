@@ -76,7 +76,7 @@ export class RectangularToneMap implements ToneMap {
 }
 
 
-export function TwelveToneMap(startNote: string = 'C0') {
+export function TwelveToneMap(startNote: string = 'C1') {
   const intervalRight = '2M'
   const intervalUpRight = '2m'
 
