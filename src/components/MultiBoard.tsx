@@ -1,10 +1,11 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import ScrollContainer from 'react-indiana-drag-scroll'
 
 import type { BoardGeometry } from '../lib/lumatone/BoardGeometry'
 import TerpstraBoard from './TerpstraBoard'
 import { rotatedRectBounds } from '../lib/drawing'
-import { useParamsContext } from '../context/params'
+import { useRecoilValue } from 'recoil'
+import { colorParamState, toneMappingParamState } from '../state/userParams'
 
 interface Props {
   numBoards?: number
@@ -13,12 +14,8 @@ interface Props {
 
 export default function MultiBoard(props: Props): React.ReactElement {
   const numBoards = props.numBoards || 2
-  const [
-    {
-      mapping: { toneMap: tm },
-      color: { palette },
-    },
-  ] = useParamsContext()
+  const { toneMap: tm } = useRecoilValue(toneMappingParamState)
+  const { palette } = useRecoilValue(colorParamState)
 
   const { geometry: geo } = props
   const boards = []

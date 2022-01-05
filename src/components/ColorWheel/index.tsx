@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { Note } from '@tonaljs/tonal'
 import type { Scale } from '@tonaljs/scale'
 
@@ -7,7 +7,8 @@ import PitchConstellation from './PitchConstellation'
 import { useLayoutContext } from '../../context/layout'
 import { NOTES } from '../../constants'
 import { IPalette } from '../../types'
-import { useParamsContext } from '../../context/params'
+import { useRecoilValue } from 'recoil'
+import { colorParamState, harmonicParamState } from '../../state/userParams'
 
 interface Props {
   radius: number
@@ -21,9 +22,8 @@ export default function ColorWheel(props: Props): React.ReactElement {
   // force re-render when layout changes (e.g. window or dock tab resizes)
   useLayoutContext()
 
-  const [params] = useParamsContext()
-  const scale = props.scale || params.harmonic.scale
-  const palette = props.palette || params.color.palette
+  const scale = props.scale || useRecoilValue(harmonicParamState).scale
+  const palette = props.palette || useRecoilValue(colorParamState).palette
 
   let { radius } = props
   const divisions = palette.divisions

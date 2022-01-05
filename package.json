@@ -21,6 +21,7 @@
     "react-dom": "^17.0.0",
     "react-indiana-drag-scroll": "^2.1.0",
     "react-planet": "^1.0.1",
+    "recoil": "^0.5.2",
     "tinycolor2": "^1.4.2",
     "ts-checked-fsm": "^1.1.0",
     "webmidi": "^2.5.3"

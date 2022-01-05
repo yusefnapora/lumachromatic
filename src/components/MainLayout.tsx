@@ -14,26 +14,24 @@ import { LayoutContext } from '../context/layout'
 import HarmonyPanel from './HarmonyPanel'
 
 export const MainLayout = () => {
-  const [params] = useParamsContext()
   const [layout, setLayout] = useState<LayoutBase | null>(null)
-  const layoutRef = useRef<DockLayout>()
+  const layoutRef = useRef<DockLayout>(null)
 
   const onExport = () => {
-    console.log('exporting lumatone config')
-    const {
-      harmonic: { scale },
-      color: { palette },
-      mapping: { toneMap },
-    } = params
-    const ini = exportLumatoneIni(toneMap, palette, scale)
-    const blob = new Blob([ini], { type: 'text/plain;charset=utf-8' })
-    const filename = scale.name + '.ltn'
-    saveAs(blob, filename)
+    console.log('exporting temp disabled...')
+    // const {
+    //   harmonic: { scale },
+    //   color: { palette },
+    //   mapping: { toneMap },
+    // } = params
+    // const ini = exportLumatoneIni(toneMap, palette, scale)
+    // const blob = new Blob([ini], { type: 'text/plain;charset=utf-8' })
+    // const filename = scale.name + '.ltn'
+    // saveAs(blob, filename)
   }
 
   const harmonyPanel = <HarmonyPanel />
   const midiPanel = <MidiPanel />
-  const paramsPanel = <ParamsPanel exportReqested={onExport} />
   const colorWheel = <ColorWheel radius={150} />
 
   const keyDiameter = 28
@@ -57,7 +55,6 @@ export const MainLayout = () => {
       {
         tabs: [
           { id: 'harmony', title: 'Harmony', content: harmonyPanel },
-          { id: 'params', title: 'params', content: paramsPanel },
           { id: 'midi', title: 'midi', content: midiPanel },
         ],
       },

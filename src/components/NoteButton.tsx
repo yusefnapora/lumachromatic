@@ -1,6 +1,8 @@
 import React from 'react'
+import { useRecoilValue } from 'recoil'
 import { useParamsContext } from '../context/params'
 import { outlineTextShadow } from '../lib/styleUtils'
+import { colorParamState } from '../state/userParams'
 
 interface Props {
   note: string
@@ -9,11 +11,7 @@ interface Props {
 }
 
 export function NoteButton(props: Props) {
-  const [
-    {
-      color: { palette },
-    },
-  ] = useParamsContext()
+  const { palette } = useRecoilValue(colorParamState)
   const colors = palette.noteColors(props.note)
 
   const { disabled } = props

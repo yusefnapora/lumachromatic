@@ -3,7 +3,8 @@ import React from 'react'
 import { KeyCoordinates, stringifyCoord } from '../lib/coordinates'
 import type { ToneMap, IPalette as Palette } from '../types'
 import type { BoardGeometry } from '../lib/lumatone/BoardGeometry'
-import { useParamsContext } from '../context/params'
+import { useRecoilValue } from 'recoil'
+import { harmonicParamState } from '../state/userParams'
 
 interface Props {
   geometry: BoardGeometry
@@ -17,12 +18,7 @@ interface Props {
  */
 export default function TerpstraBoard(props: Props): React.ReactElement {
   const { geometry, toneMap, palette } = props
-
-  const [
-    {
-      harmonic: { scale },
-    },
-  ] = useParamsContext()
+  const { scale } = useRecoilValue(harmonicParamState)
 
   const keyProps = KeyCoordinates.allCoordinates()
     .map((c) => {

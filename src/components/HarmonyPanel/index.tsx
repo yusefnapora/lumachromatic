@@ -1,18 +1,19 @@
 import React from 'react'
 import { Scale } from '@tonaljs/tonal'
-import { useParamsContext } from '../../context/params'
 import NoteButtonStrip from '../NoteButtonStrip'
 import { SCALE_TYPES } from '../../constants'
 import { ScaleTypeButton } from '../ScaleTypeButton'
+import { useRecoilState } from 'recoil'
+import { harmonicParamState } from '../../state/userParams'
 
 export default function HarmonyPanel() {
-  const [{ harmonic }, updateParams] = useParamsContext()
+  const [harmonic, setHarmonicState] = useRecoilState(harmonicParamState)
 
   const onNoteClicked = (note: string) => {
     const name = `${note} ${harmonic.scale.type}`
     const scale = Scale.get(name)
     if (scale) {
-      updateParams({ harmonic: { ...harmonic, scale } })
+      setHarmonicState({ scale })
     }
   }
 
@@ -20,7 +21,7 @@ export default function HarmonyPanel() {
     const name = `${harmonic.scale.tonic} ${scaleType}`
     const scale = Scale.get(name)
     if (scale) {
-      updateParams({ harmonic: { ...harmonic, scale } })
+      setHarmonicState({ scale })
     }
   }
 
