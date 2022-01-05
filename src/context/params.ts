@@ -13,7 +13,7 @@ const defaultColorParams = {
 }
 
 const defaultMappingParams = {
-  toneMap: TwelveToneMap()
+  toneMap: TwelveToneMap('C2')
 }
 
 export const defaultParams = {

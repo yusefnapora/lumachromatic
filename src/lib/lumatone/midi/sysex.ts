@@ -21,7 +21,7 @@ class Sentence {
       if (v === undefined) {
         v = Number.parseInt(t, 16)
       }
-      output[i] = v & 0x7F
+      output[i] = v & 0x7f
       i++
     }
     return output

@@ -51,7 +51,8 @@ export default class Palette {
     }
     if (muted) {
       const hsla = tinycolor(color).toHsl()
-      hsla.l *= 0.3
+      hsla.s *= 0.7
+      hsla.l *= 0.2
       const c = tinycolor(hsla).toHexString()
       return c
     }

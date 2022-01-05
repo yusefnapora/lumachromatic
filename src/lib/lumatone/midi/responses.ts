@@ -6,7 +6,7 @@ export type Result<T> = Ok<T> | ErrorResult
 export type Ok<T> = { value: T }
 export type ErrorResult = { error: ErrorId }
 
-export const isOk = <T>(r: Result<T>): r is Ok<T> => !('value' in r)
+export const isOk = <T>(r: Result<T>): r is Ok<T> => ('value' in r)
 
 
 export type PingResponse = { pingId: number }
