@@ -39,9 +39,7 @@ class Sentence {
 export function createSysex(boardIndex: BoardIndex, cmd: CommandId, ...data: number[]): EncodedSysex {
   const dataStr = data.map(toTwoHexDigits).join(' ')  
   const s = new Sentence('boardIndex cmd ' + dataStr)
-  const msg =  s.encode({ boardIndex, cmd })
-  console.log('encoded sysex message:', msg)
-  return msg
+  return s.encode({ boardIndex, cmd })
 }
 
 /**
