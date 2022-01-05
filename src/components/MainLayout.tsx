@@ -7,11 +7,7 @@ import ColorWheel from '../components/ColorWheel'
 import ParamsPanel from '../components/ParamsPanel'
 import MidiPanel from '../components/MidiPanel'
 import MultiBoard from '../components/MultiBoard'
-import ParamsContext, {
-  defaultParams,
-  useParamsContext,
-} from '../context/params'
-import { AllParams } from '../types'
+import { useParamsContext } from '../context/params'
 import { exportLumatoneIni } from '../lib/lumatone/export'
 import { BoardGeometry } from '../lib/lumatone/BoardGeometry'
 import { LayoutContext } from '../context/layout'
