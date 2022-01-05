@@ -1,8 +1,8 @@
-import { MidiDriver } from "./driver"
+import { MidiDriver } from './driver'
 import type { DeviceConfig, BoardConfig, LumatoneKeyConfig } from '../export'
-import { MidiDevice } from "./device"
+import { MidiDevice } from './device'
 import { setKeyFunctionParameters, setKeyLightParameters } from './commands'
-import tinycolor from "tinycolor2"
+import tinycolor from 'tinycolor2'
 
 /**
  * Public API for interacting with lumatone device.
@@ -13,7 +13,7 @@ export class LumatoneController {
   constructor(device: MidiDevice) {
     this.#driver = new MidiDriver(device)
   }
-  
+
   async sendDeviceConfig(config: DeviceConfig): Promise<void> {
     await Promise.all(config.boards.map(this.sendBoardConfig))
   }
@@ -26,9 +26,19 @@ export class LumatoneController {
     await Promise.all(promises)
   }
 
-  async sendKeyConfig(boardIndex: number, config: LumatoneKeyConfig): Promise<void> {
+  async sendKeyConfig(
+    boardIndex: number,
+    config: LumatoneKeyConfig
+  ): Promise<void> {
     const faderUpIsNull = false // TODO
-    const setFunctions = setKeyFunctionParameters(boardIndex, config.keyNum, config.midiNoteOrCC, config.midiChannel, config.keyType, faderUpIsNull)
+    const setFunctions = setKeyFunctionParameters(
+      boardIndex,
+      config.keyNum,
+      config.midiNoteOrCC,
+      config.midiChannel,
+      config.keyType,
+      faderUpIsNull
+    )
     const { r, g, b } = tinycolor(config.color).toRgb()
     const setLights = setKeyLightParameters(boardIndex, config.keyNum, r, g, b)
 

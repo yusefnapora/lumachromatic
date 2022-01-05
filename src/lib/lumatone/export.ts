@@ -7,16 +7,16 @@ import { HexColor } from '../../types'
 import { LumatoneKeyType } from './midi/constants'
 
 export type LumatoneKeyConfig = {
-  keyNum: number,
-  keyType: LumatoneKeyType,
-  color: HexColor,
-  midiNoteOrCC: number,
-  midiChannel: number,
+  keyNum: number
+  keyType: LumatoneKeyType
+  color: HexColor
+  midiNoteOrCC: number
+  midiChannel: number
 }
 
 export type BoardConfig = {
-  boardIndex: number,
-  keys: LumatoneKeyConfig[],
+  boardIndex: number
+  keys: LumatoneKeyConfig[]
 }
 
 export type DeviceConfig = {
@@ -30,13 +30,18 @@ function configToIni(config: BoardConfig): string {
     lines.push(
       `Key_${k.keyNum}=${k.midiNoteOrCC}`,
       `Chan_${k.keyNum}=${k.midiChannel}`,
-      `Col_${k.keyNum}=${k.color}`,
+      `Col_${k.keyNum}=${k.color}`
     )
   }
   return lines.join('\n')
 }
 
-function singleBoardConfig(boardIndex: number = 0, toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined): BoardConfig {
+function singleBoardConfig(
+  boardIndex: number = 0,
+  toneMap: ToneMap,
+  palette: Palette,
+  scale: ScaleT | undefined
+): BoardConfig {
   const keys: LumatoneKeyConfig[] = []
   for (const c of KeyCoordinates.allCoordinates()) {
     const keyNum = KeyCoordinates.keyNumber(c)
@@ -49,7 +54,9 @@ function singleBoardConfig(boardIndex: number = 0, toneMap: ToneMap, palette: Pa
       console.warn('key definition not found for ', c)
       continue
     }
-    const color = palette.colorForNoteName(keyDef.note, scale)?.replace(/^#/, '')
+    const color = palette
+      .colorForNoteName(keyDef.note, scale)
+      ?.replace(/^#/, '')
     if (color == null) {
       console.warn('color not found for ', c)
       continue
@@ -62,22 +69,44 @@ function singleBoardConfig(boardIndex: number = 0, toneMap: ToneMap, palette: Pa
     }
     const midiChannel = 1 // TODO: multiple channels
     const keyType = LumatoneKeyType.NoteOnNoteOff // TODO: other key types
-    keys[keyNum] = { midiNoteOrCC, midiChannel, color, keyNum , keyType }
+    keys[keyNum] = { midiNoteOrCC, midiChannel, color, keyNum, keyType }
   }
   // console.log('lumatone configs', keyConfigs)
 
   return { boardIndex, keys }
 }
 
-export function lumatoneDeviceConfig(toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined, boardTranspose: number = 12): DeviceConfig {
+export function lumatoneDeviceConfig(
+  toneMap: ToneMap,
+  palette: Palette,
+  scale: ScaleT | undefined,
+  boardTranspose: number = 12
+): DeviceConfig {
   const boards: BoardConfig[] = []
   for (let i = 0; i < 5; i++) {
-    boards.push(singleBoardConfig(i, toneMap.transposed(boardTranspose * i), palette, scale))
+    boards.push(
+      singleBoardConfig(
+        i,
+        toneMap.transposed(boardTranspose * i),
+        palette,
+        scale
+      )
+    )
   }
   return { boards }
 }
 
-export function exportLumatoneIni(toneMap: ToneMap, palette: Palette, scale: ScaleT|undefined, boardTranspose: number = 12): string {
-  const { boards } = lumatoneDeviceConfig(toneMap, palette, scale, boardTranspose)
+export function exportLumatoneIni(
+  toneMap: ToneMap,
+  palette: Palette,
+  scale: ScaleT | undefined,
+  boardTranspose: number = 12
+): string {
+  const { boards } = lumatoneDeviceConfig(
+    toneMap,
+    palette,
+    scale,
+    boardTranspose
+  )
   return boards.map(configToIni).join('\n')
 }

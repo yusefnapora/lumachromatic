@@ -1,9 +1,7 @@
-
 import { CMD_ID, BOARD_IND, MANUFACTURER_ID, PAYLOAD_INIT } from './constants'
 import type { CommandId, BoardIndex } from './constants'
 import { ErrorId, FirmwareError } from './errors'
 export type EncodedSysex = number[] | Uint8Array
-
 
 // inspired by the `sysex` module, which vite sadly doesn't like for some reason...
 class Sentence {
@@ -30,14 +28,18 @@ class Sentence {
 
 /**
  * Creates a sysex command payload representing a lumatone command.
- * 
+ *
  * @param boardIndex lumatone board index, with 0 indicating the "server" board responsible for global operations.
  * @param cmd command id
  * @param data command-specific data. each array element will be truncated to 0x7F to fit into midi range.
  * @returns encoded sysex message as number[]
  */
-export function createSysex(boardIndex: BoardIndex, cmd: CommandId, ...data: number[]): EncodedSysex {
-  const dataStr = data.map(toTwoHexDigits).join(' ')  
+export function createSysex(
+  boardIndex: BoardIndex,
+  cmd: CommandId,
+  ...data: number[]
+): EncodedSysex {
+  const dataStr = data.map(toTwoHexDigits).join(' ')
   const s = new Sentence('boardIndex cmd ' + dataStr)
   return s.encode({ boardIndex, cmd })
 }
@@ -49,7 +51,11 @@ export function createSysex(boardIndex: BoardIndex, cmd: CommandId, ...data: num
  * @param state toggle value
  * @returns encoded sysex message as number[]
  */
- export function createSysexToggle(boardIndex: BoardIndex, cmd: CommandId, state: boolean): EncodedSysex {
+export function createSysexToggle(
+  boardIndex: BoardIndex,
+  cmd: CommandId,
+  state: boolean
+): EncodedSysex {
   return createSysex(boardIndex, cmd, state ? 1 : 0)
 }
 
@@ -63,10 +69,19 @@ export function createSysex(boardIndex: BoardIndex, cmd: CommandId, ...data: num
  * @param blue blue colour component. range: [0, 0xFF]
  * @returns encoded sysex message as number[]
  */
-export function createExtendedKeyColourSysex(boardIndex: BoardIndex, cmd: CommandId, keyIndex: number, red: number, green: number, blue: number): EncodedSysex {
-  const s = new Sentence('boardIndex cmd keyIndex redUpper redLower greenUpper greenLower blueUpper blueLower')
+export function createExtendedKeyColourSysex(
+  boardIndex: BoardIndex,
+  cmd: CommandId,
+  keyIndex: number,
+  red: number,
+  green: number,
+  blue: number
+): EncodedSysex {
+  const s = new Sentence(
+    'boardIndex cmd keyIndex redUpper redLower greenUpper greenLower blueUpper blueLower'
+  )
   const colorPairs = toRGBPairs(red, green, blue)
-  return s.encode({boardIndex, cmd, keyIndex, ...colorPairs })
+  return s.encode({ boardIndex, cmd, keyIndex, ...colorPairs })
 }
 
 /**
@@ -77,8 +92,15 @@ export function createExtendedKeyColourSysex(boardIndex: BoardIndex, cmd: Comman
  * @param blue blue colour component. range: [0, 0xFF]
  * @returns encoded sysex message as number[]
  */
-export function createExtendedMacroColourSysex(cmd: CommandId, red: number, green: number, blue: number): EncodedSysex {
-  const s = new Sentence('00 cmd redUpper redLower greenUpper greenLower blueUpper blueLower')
+export function createExtendedMacroColourSysex(
+  cmd: CommandId,
+  red: number,
+  green: number,
+  blue: number
+): EncodedSysex {
+  const s = new Sentence(
+    '00 cmd redUpper redLower greenUpper greenLower blueUpper blueLower'
+  )
   const colorPairs = toRGBPairs(red, green, blue)
   return s.encode({ cmd, ...colorPairs })
 }
@@ -89,7 +111,10 @@ export function createExtendedMacroColourSysex(cmd: CommandId, red: number, gree
  * @param table table data as a linear array
  * @returns encoded sysex message as number[]
  */
-export function createTableSysex(cmd: CommandId, table: number[]): EncodedSysex {
+export function createTableSysex(
+  cmd: CommandId,
+  table: number[]
+): EncodedSysex {
   const tableDigits = table.map(toTwoHexDigits).join(' ')
   const s = new Sentence('00 cmd ' + tableDigits)
   return s.encode({ cmd })
@@ -101,7 +126,10 @@ export function createTableSysex(cmd: CommandId, table: number[]): EncodedSysex 
  * @param incoming an encoded sysex response message
  * @returns true if `incoming` is a valid response to `outgoing`
  */
-export function messageIsResponseToMessage(outgoing: EncodedSysex, incoming: EncodedSysex): boolean {
+export function messageIsResponseToMessage(
+  outgoing: EncodedSysex,
+  incoming: EncodedSysex
+): boolean {
   if (!isLumatoneMessage(incoming)) {
     return false
   }
@@ -115,7 +143,7 @@ export function messageIsResponseToMessage(outgoing: EncodedSysex, incoming: Enc
 
 /**
  * @param msg a sysex message payload
- * @returns 
+ * @returns
  */
 export function isLumatoneMessage(msg: EncodedSysex) {
   if (msg.length < MANUFACTURER_ID.length) {
@@ -135,7 +163,10 @@ export function isLumatoneMessage(msg: EncodedSysex) {
  * @param length the length of the payload (length of message, excluding manufacturer id, board index, and command id)
  * @returns ErrorId.NoError if payload has expected length, MessageTooShort or MessageTooLong otherwise.
  */
-export function validatePayloadLength(msg: EncodedSysex, length: number): ErrorId {
+export function validatePayloadLength(
+  msg: EncodedSysex,
+  length: number
+): ErrorId {
   const expected = PAYLOAD_INIT + length
   if (msg.length === expected) {
     return ErrorId.NoError
@@ -167,7 +198,14 @@ export function getBoardIndex(msg: EncodedSysex): BoardIndex {
 
 // --- helpers
 
-type RGB4BitPairs = { redUpper: number, redLower: number, greenUpper: number, greenLower: number, blueUpper: number, blueLower: number }
+type RGB4BitPairs = {
+  redUpper: number
+  redLower: number
+  greenUpper: number
+  greenLower: number
+  blueUpper: number
+  blueLower: number
+}
 function toRGBPairs(red: number, green: number, blue: number): RGB4BitPairs {
   const redUpper = red >> 4
   const redLower = red & 0xf
@@ -179,6 +217,6 @@ function toRGBPairs(red: number, green: number, blue: number): RGB4BitPairs {
 }
 
 function toTwoHexDigits(n: number): string {
-  n = n & 0x7F // restrict to midi range 
+  n = n & 0x7f // restrict to midi range
   return n.toString(16).padStart(2, '0')
 }

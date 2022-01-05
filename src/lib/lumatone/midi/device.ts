@@ -1,9 +1,9 @@
 import WebMidi from 'webmidi'
 import type { Input, Output } from 'webmidi'
 
-export type MidiDevice = { 
-  input: Input,
-  output: Output,
+export type MidiDevice = {
+  input: Input
+  output: Output
 }
 
 let _webMidiEnabled = false
@@ -13,7 +13,7 @@ function enableWebMidi(): Promise<void> {
   }
   return new Promise((resolve, reject) => {
     const useSysex = true
-    WebMidi.enable(err => {
+    WebMidi.enable((err) => {
       if (err) {
         return reject(err)
       }

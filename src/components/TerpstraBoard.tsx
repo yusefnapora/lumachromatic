@@ -1,16 +1,15 @@
-import React, { useContext } from 'react'
+import React from 'react'
 
 import { KeyCoordinates, stringifyCoord } from '../lib/coordinates'
 import type { ToneMap, IPalette as Palette } from '../types'
 import type { BoardGeometry } from '../lib/lumatone/BoardGeometry'
-import ParamsContext from '../context/params'
-
+import { useParamsContext } from '../context/params'
 
 interface Props {
-  geometry: BoardGeometry,
-  toneMap: ToneMap,
-  palette: Palette,
-  key: string,
+  geometry: BoardGeometry
+  toneMap: ToneMap
+  palette: Palette
+  key: string
 }
 
 /**
@@ -19,11 +18,14 @@ interface Props {
 export default function TerpstraBoard(props: Props): React.ReactElement {
   const { geometry, toneMap, palette } = props
 
-  const { harmonic: { scale } } = useContext(ParamsContext)
-  console.log('board scale: ', scale)
-  
+  const [
+    {
+      harmonic: { scale },
+    },
+  ] = useParamsContext()
+
   const keyProps = KeyCoordinates.allCoordinates()
-    .map(c => {
+    .map((c) => {
       const def = toneMap.get(c)
       if (!def) {
         return null
@@ -33,28 +35,29 @@ export default function TerpstraBoard(props: Props): React.ReactElement {
       const fill = palette.colorForNoteName(def.note, scale)
       const label = {
         text: def.note,
-        color: 'black',
+        color: 'white',
         center: geometry.centerPoint(c),
       }
       return { points, key, fill, stroke: 'black', label }
     })
-    .filter(p => p != null)
+    .filter((p) => p != null)
 
   // @ts-ignore
-  const keys = keyProps.map(({ label, key, ...polygonProps }) => 
+  const keys = keyProps.map(({ label, key, ...polygonProps }) => (
     <g key={key}>
       <polygon {...polygonProps} />
-      <text x={label.center.x} y={label.center.y} textAnchor="middle" stroke={label.color} fill={label.color}>
+      <text
+        x={label.center.x}
+        y={label.center.y}
+        textAnchor="middle"
+        stroke={label.color}
+        fill={label.color}
+      >
         {label.text}
       </text>
     </g>
-  )
+  ))
   // console.log('keys', keys)
 
-
-  return (
-    <g key={props.key} >
-      {keys}
-    </g>
-  )
+  return <g key={props.key}>{keys}</g>
 }

@@ -21,11 +21,10 @@ export enum ErrorId {
   MessageIsNotResponseToCommand,
   MessageIsNotSysEx,
   UnknownCommand,
-  ExternalError
+  ExternalError,
 }
 
-export const errorMessage = (e: ErrorId): string => 
-  toSentenceCase(ErrorId[e])
+export const errorMessage = (e: ErrorId): string => toSentenceCase(ErrorId[e])
 
 const toSentenceCase = (s: string): string => {
   const s2 = decamelize(s, { separator: ' ' })

@@ -21,8 +21,15 @@ export async function detectDevice(): Promise<MidiDevice> {
   const pingTimeoutMs = 5000
 
   return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => 
-      reject(new Error(`timed out after ${pingTimeoutMs}ms waiting for ping response`)), pingTimeoutMs)
+    const timeout = setTimeout(
+      () =>
+        reject(
+          new Error(
+            `timed out after ${pingTimeoutMs}ms waiting for ping response`
+          )
+        ),
+      pingTimeoutMs
+    )
 
     // register sysex listeners on all inputs
     for (const input of inputs) {
@@ -45,7 +52,7 @@ export async function detectDevice(): Promise<MidiDevice> {
           debug('invalid ping response: ', errorMessage(pingResult.error))
           return
         }
-       
+
         const outputId = pingResult.value.pingId
         if (outputId >= outputs.length) {
           debug('ping response contained invalid output index ' + outputId)
