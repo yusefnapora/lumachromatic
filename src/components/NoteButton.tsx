@@ -1,6 +1,5 @@
 import React from 'react'
 import { useRecoilValue } from 'recoil'
-import { useParamsContext } from '../context/params'
 import { outlineTextShadow } from '../lib/styleUtils'
 import { colorParamState } from '../state/userParams'
 
