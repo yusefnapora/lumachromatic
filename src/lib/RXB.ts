@@ -14,9 +14,9 @@
  *
  * Meta-Package by: Dave Eddy <dave@daveeddy.com>
  * MIT License
- * 
+ *
  * Conversion to typescript by: Yusef Napora <yusef@napora.org>
- * 
+ *
  */
 
 export type RXBArray = [number, number, number]
@@ -36,9 +36,8 @@ export type RXBArray = [number, number, number]
  * clamp(5, 0, 2) => 2
  */
 function clamp(x: number, low: number = 0, high: number = 255): number {
-  return Math.max(low, Math.min(high, x));
+  return Math.max(low, Math.min(high, x))
 }
-
 
 /**
  * Convert a decimal to a 2 digit hex string
@@ -50,10 +49,9 @@ function clamp(x: number, low: number = 0, high: number = 255): number {
  * ex: 9 => '09', 13 => '0d'
  */
 function d2h(d: number): string {
-  var hex = Math.round(d).toString(16);
-  while (hex.length < 2)
-    hex = '0' + hex;
-  return hex;
+  var hex = Math.round(d).toString(16)
+  while (hex.length < 2) hex = '0' + hex
+  return hex
 }
 
 /**
@@ -66,7 +64,7 @@ function d2h(d: number): string {
  * ex: '0d' => 13, '09' => 9
  */
 function h2d(h: string): number {
-  return parseInt(h, 16);
+  return parseInt(h, 16)
 }
 
 /**
@@ -79,7 +77,7 @@ function h2d(h: string): number {
  * ex: [0, 255, 0] => '00ff00'
  */
 function rxb2hex(rxb: RXBArray): string {
-  return d2h(rxb[0]) + d2h(rxb[1]) + d2h(rxb[2]);
+  return d2h(rxb[0]) + d2h(rxb[1]) + d2h(rxb[2])
 }
 
 /**
@@ -92,12 +90,11 @@ function rxb2hex(rxb: RXBArray): string {
  * ex: '0000ff' => [0, 0, 255]
  */
 function hex2rxb(hex: string): RXBArray {
-  if (hex.charAt(0) === '#')
-    hex = hex.substr(1);
-  var r = hex.substr(0,2);
-  var g = hex.substr(2,2);
-  var b = hex.substr(4,2);
-  return [ h2d(r), h2d(g), h2d(b) ];
+  if (hex.charAt(0) === '#') hex = hex.substr(1)
+  var r = hex.substr(0, 2)
+  var g = hex.substr(2, 2)
+  var b = hex.substr(4, 2)
+  return [h2d(r), h2d(g), h2d(b)]
 }
 
 /**
@@ -108,29 +105,33 @@ function hex2rxb(hex: string): RXBArray {
  * @param value  {float} a number -1>=value<=1 representing the value to step the color
  * @param limit  {int}   the upper limit of the color range, defaults to 255
  */
-function stepcolor(hex: string | RXBArray, value: number, limit: number = 255): RXBArray {
-  var rxb = typeof hex === 'string' ? hex2rxb(hex) : hex;
+function stepcolor(
+  hex: string | RXBArray,
+  value: number,
+  limit: number = 255
+): RXBArray {
+  var rxb = typeof hex === 'string' ? hex2rxb(hex) : hex
 
-  var r = rxb[0];
-  var x = rxb[1];
-  var b = rxb[2];
+  var r = rxb[0]
+  var x = rxb[1]
+  var b = rxb[2]
 
-  var stepR, stepX, stepB;
+  var stepR, stepX, stepB
   if (value > 0) {
-    stepR = (limit - r) / limit;
-    stepX = (limit - x) / limit;
-    stepB = (limit - b) / limit;
+    stepR = (limit - r) / limit
+    stepX = (limit - x) / limit
+    stepB = (limit - b) / limit
   } else {
-    stepR = r / limit;
-    stepX = x / limit;
-    stepB = b / limit;
+    stepR = r / limit
+    stepX = x / limit
+    stepB = b / limit
   }
 
-  r += stepR * value * limit;
-  x += stepX * value * limit;
-  b += stepB * value * limit;
+  r += stepR * value * limit
+  x += stepX * value * limit
+  b += stepB * value * limit
 
-  return [clamp(r), clamp(x), clamp(b)];
+  return [clamp(r), clamp(x), clamp(b)]
 }
 
 /**
@@ -142,20 +143,24 @@ function stepcolor(hex: string | RXBArray, value: number, limit: number = 255): 
  *
  * returns a complementary array
  */
-function complementary(color: RXBArray, value: number, limit?: number): RXBArray {
-  limit = limit || 255;
-  var colorstepped = stepcolor(color, value, limit);
-  var r = colorstepped[0];
-  var y = colorstepped[1];
-  var b = colorstepped[2];
+function complementary(
+  color: RXBArray,
+  value: number,
+  limit?: number
+): RXBArray {
+  limit = limit || 255
+  var colorstepped = stepcolor(color, value, limit)
+  var r = colorstepped[0]
+  var y = colorstepped[1]
+  var b = colorstepped[2]
 
-  var ncolor: RXBArray = [limit - r, limit - y, limit - b];
-  var ncolorstepped = stepcolor(ncolor, value, limit);
-  var nr = ncolorstepped[0];
-  var ny = ncolorstepped[1];
-  var nb = ncolorstepped[2];
+  var ncolor: RXBArray = [limit - r, limit - y, limit - b]
+  var ncolorstepped = stepcolor(ncolor, value, limit)
+  var nr = ncolorstepped[0]
+  var ny = ncolorstepped[1]
+  var nb = ncolorstepped[2]
 
-  return [nr, ny, nb];
+  return [nr, ny, nb]
 }
 
 /**
@@ -171,34 +176,38 @@ function complementary(color: RXBArray, value: number, limit?: number): RXBArray
  *
  * Ex: var neutrals = neutrals('ff00ff', 0, 4);
  */
-function neutrals(hex: string | RXBArray, value: number, count: number = 8): RXBArray[] {
+function neutrals(
+  hex: string | RXBArray,
+  value: number,
+  count: number = 8
+): RXBArray[] {
   var ryb: RXBArray
   if (typeof hex === 'string') {
-    ryb = hex2rxb(hex);
+    ryb = hex2rxb(hex)
   } else {
     ryb = hex
   }
 
-  var complement = complementary(ryb, value);
-  ryb = stepcolor(ryb, value);
+  var complement = complementary(ryb, value)
+  ryb = stepcolor(ryb, value)
   var d = {
     r: (complement[0] - ryb[0]) / (count - 1),
     y: (complement[1] - ryb[1]) / (count - 1),
-    b: (complement[2] - ryb[2]) / (count - 1)
-  };
-
-  var n = [];
-  for (var i = 0; i < count; i++) {
-    // Save it
-    n.push(ryb.slice(0));
-
-    // Now move the color
-    ryb[0] += d.r;
-    ryb[1] += d.y;
-    ryb[2] += d.b;
+    b: (complement[2] - ryb[2]) / (count - 1),
   }
 
-  return n as RXBArray[];
+  var n = []
+  for (var i = 0; i < count; i++) {
+    // Save it
+    n.push(ryb.slice(0))
+
+    // Now move the color
+    ryb[0] += d.r
+    ryb[1] += d.y
+    ryb[2] += d.b
+  }
+
+  return n as RXBArray[]
 }
 
 /**
@@ -211,42 +220,42 @@ function neutrals(hex: string | RXBArray, value: number, count: number = 8): RXB
  * with every possible color.
  */
 function rainbow(size: number): RXBArray[] {
-  var i;
-  var numcolors = 3; // 3 possible colors: r, x, b
+  var i
+  var numcolors = 3 // 3 possible colors: r, x, b
   var colors = [
     255, // r
-    0,   // x
-    0    // b
-  ];
+    0, // x
+    0, // b
+  ]
 
   // generate a rainbow for all colors
-  var addingcolor = true; // adding or subtracting color
-  var r = [];
+  var addingcolor = true // adding or subtracting color
+  var r = []
   for (var color = 0; color < numcolors * 2; color++) {
     // color will loop twice, so grab the lower digit
-    var thecolor = (color + 2) % numcolors;
+    var thecolor = (color + 2) % numcolors
 
     // loop the possible values
     for (i = 0; i < 256; i++) {
       // set the color to i if adding, and 255 -i if subtracting
-      colors[thecolor] = addingcolor ? i : 255 - i;
+      colors[thecolor] = addingcolor ? i : 255 - i
 
       // push a copy of the array
-      r.push(colors.slice(0));
+      r.push(colors.slice(0))
     }
 
     // flip the bit
-    addingcolor = !addingcolor;
+    addingcolor = !addingcolor
   }
 
   // only push what the user wanted, this si kinda gross
-  var ret: RXBArray[] = [];
-  var step = r.length / (size || r.length);
+  var ret: RXBArray[] = []
+  var step = r.length / (size || r.length)
   for (i = 0; Math.ceil(i) < r.length; i += step) {
     var r2 = (r[Math.round(i)] || r[Math.floor(i)]).slice(0) as RXBArray
-    ret.push(r2);
+    ret.push(r2)
   }
-  return ret;
+  return ret
 }
 
 /**
@@ -259,69 +268,84 @@ function rainbow(size: number): RXBArray[] {
  * returns an array of the RGB values
  */
 var MAGIC_COLORS: RXBArray[] = [
-  [1,     1,     1],
-  [1,     1,     0],
-  [1,     0,     0],
-  [1,     0.5,   0],
+  [1, 1, 1],
+  [1, 1, 0],
+  [1, 0, 0],
+  [1, 0.5, 0],
   [0.163, 0.373, 0.6],
-  [0.0,   0.66,  0.2],
-  [0.5,   0.0,   0.5],
-  [0.2,   0.094, 0.0]
-];
+  [0.0, 0.66, 0.2],
+  [0.5, 0.0, 0.5],
+  [0.2, 0.094, 0.0],
+]
 // see http://threekings.tk/mirror/ryb_TR.pdf
 function cubicInt(t: number, A: number, B: number): number {
-  var weight = t * t * (3 - 2 * t);
-  return A + weight * (B - A);
+  var weight = t * t * (3 - 2 * t)
+  return A + weight * (B - A)
 }
 
-function getR(iR: number, iY: number, iB: number, magic: RXBArray[] = MAGIC_COLORS): number {
+function getR(
+  iR: number,
+  iY: number,
+  iB: number,
+  magic: RXBArray[] = MAGIC_COLORS
+): number {
   // red
-  var x0 = cubicInt(iB, magic[0][0], magic[4][0]);
-  var x1 = cubicInt(iB, magic[1][0], magic[5][0]);
-  var x2 = cubicInt(iB, magic[2][0], magic[6][0]);
-  var x3 = cubicInt(iB, magic[3][0], magic[7][0]);
-  var y0 = cubicInt(iY, x0, x1);
-  var y1 = cubicInt(iY, x2, x3);
-  return cubicInt(iR, y0, y1);
+  var x0 = cubicInt(iB, magic[0][0], magic[4][0])
+  var x1 = cubicInt(iB, magic[1][0], magic[5][0])
+  var x2 = cubicInt(iB, magic[2][0], magic[6][0])
+  var x3 = cubicInt(iB, magic[3][0], magic[7][0])
+  var y0 = cubicInt(iY, x0, x1)
+  var y1 = cubicInt(iY, x2, x3)
+  return cubicInt(iR, y0, y1)
 }
 
-function getG(iR: number, iY: number, iB: number, magic: RXBArray[] = MAGIC_COLORS): number {
+function getG(
+  iR: number,
+  iY: number,
+  iB: number,
+  magic: RXBArray[] = MAGIC_COLORS
+): number {
   // green
-  var x0 = cubicInt(iB, magic[0][1], magic[4][1]);
-  var x1 = cubicInt(iB, magic[1][1], magic[5][1]);
-  var x2 = cubicInt(iB, magic[2][1], magic[6][1]);
-  var x3 = cubicInt(iB, magic[3][1], magic[7][1]);
-  var y0 = cubicInt(iY, x0, x1);
-  var y1 = cubicInt(iY, x2, x3);
-  return cubicInt(iR, y0, y1);
+  var x0 = cubicInt(iB, magic[0][1], magic[4][1])
+  var x1 = cubicInt(iB, magic[1][1], magic[5][1])
+  var x2 = cubicInt(iB, magic[2][1], magic[6][1])
+  var x3 = cubicInt(iB, magic[3][1], magic[7][1])
+  var y0 = cubicInt(iY, x0, x1)
+  var y1 = cubicInt(iY, x2, x3)
+  return cubicInt(iR, y0, y1)
 }
 
-function getB(iR: number, iY: number, iB: number, magic: RXBArray[] = MAGIC_COLORS): number {
+function getB(
+  iR: number,
+  iY: number,
+  iB: number,
+  magic: RXBArray[] = MAGIC_COLORS
+): number {
   // blue
-  var x0 = cubicInt(iB, magic[0][2], magic[4][2]);
-  var x1 = cubicInt(iB, magic[1][2], magic[5][2]);
-  var x2 = cubicInt(iB, magic[2][2], magic[6][2]);
-  var x3 = cubicInt(iB, magic[3][2], magic[7][2]);
-  var y0 = cubicInt(iY, x0, x1);
-  var y1 = cubicInt(iY, x2, x3);
-  return cubicInt(iR, y0, y1);
+  var x0 = cubicInt(iB, magic[0][2], magic[4][2])
+  var x1 = cubicInt(iB, magic[1][2], magic[5][2])
+  var x2 = cubicInt(iB, magic[2][2], magic[6][2])
+  var x3 = cubicInt(iB, magic[3][2], magic[7][2])
+  var y0 = cubicInt(iY, x0, x1)
+  var y1 = cubicInt(iY, x2, x3)
+  return cubicInt(iR, y0, y1)
 }
 
-function ryb2rgb(color: RXBArray, limit: number = 255, magic: RXBArray[] = MAGIC_COLORS): RXBArray {
-  var R = color[0] / limit;
-  var Y = color[1] / limit;
-  var B = color[2] / limit;
-  var R1 = getR(R, Y, B, magic);
-  var G1 = getG(R, Y, B, magic);
-  var B1 = getB(R, Y, B, magic);
-  return [
-    Math.ceil(R1 * limit),
-    Math.ceil(G1 * limit),
-    Math.ceil(B1 * limit)
-  ];
+function ryb2rgb(
+  color: RXBArray,
+  limit: number = 255,
+  magic: RXBArray[] = MAGIC_COLORS
+): RXBArray {
+  var R = color[0] / limit
+  var Y = color[1] / limit
+  var B = color[2] / limit
+  var R1 = getR(R, Y, B, magic)
+  var G1 = getG(R, Y, B, magic)
+  var B1 = getB(R, Y, B, magic)
+  return [Math.ceil(R1 * limit), Math.ceil(G1 * limit), Math.ceil(B1 * limit)]
 }
 
-export default { 
+export default {
   clamp,
   d2h,
   h2d,

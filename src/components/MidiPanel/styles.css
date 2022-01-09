@@ -1,6 +1,27 @@
-
 .MidiPanel {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+}
+
+.MidiStatus {
+  margin: 20px;
+}
+
+.MidiActions {
+  margin: 20px;
+}
+
+.status-connected {
+  color: green;
+}
+
+.status-disconnected {
+  color: red;
+}
+
+.status-searching {
+  color: yellow;
 }

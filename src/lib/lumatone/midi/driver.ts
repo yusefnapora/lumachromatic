@@ -2,32 +2,38 @@ import { stateMachine, State, Action } from 'ts-checked-fsm'
 import Debug from 'debug'
 
 import { MANUFACTURER_ID, FirmwareAnswer } from './constants'
-import { getCommandId, isLumatoneMessage, messageIsResponseToMessage } from './sysex'
+import {
+  getCommandId,
+  isLumatoneMessage,
+  messageIsResponseToMessage,
+} from './sysex'
 
-import type { MidiDevice  } from './device'
+import type { MidiDevice } from './device'
 import type { InputEventSysex, Output } from 'webmidi'
 import type { EncodedSysex } from './sysex'
+import { toHex } from './detect'
 
 const debug = Debug('midi-driver')
 type Timeout = ReturnType<typeof setTimeout>
 
-const RECIEVE_TIMEOUT_MS = 2000
+const RECIEVE_TIMEOUT_MS = 20000
 const BUSY_RETRY_TIMEOUT_MS = 500
-
 
 /**
  * The Midi driver is a state machine with the following states:
- * 
+ *
  * - idle: we have nothing to send, and we're not awaiting anything from the device
  * - response-pending: we've sent a command to the device and we're waiting for a response
  * - device-busy: we've sent a command to the device and they told us to back off, so we're waiting for a retry timer to expire
- * 
+ *
  */
-type FSMState = State<"idle", IdleStateData> 
-  | State<"response-pending", ResponsePendingStateData> 
-  | State<"device-busy", DeviceBusyStateData>
+type FSMState =
+  | State<'idle', IdleStateData>
+  | State<'response-pending', ResponsePendingStateData>
+  | State<'device-busy', DeviceBusyStateData>
 
-type FSMAction = Action<'submit-command', SubmitCommandPayload>
+type FSMAction =
+  | Action<'submit-command', SubmitCommandPayload>
   | Action<'response-recieved', ResponseRecievedPayload>
   | Action<'response-timed-out', {}>
   | Action<'ready-to-retry', {}>
@@ -36,53 +42,55 @@ type FSMAction = Action<'submit-command', SubmitCommandPayload>
  * Internal state data for the idle state.
  */
 type IdleStateData = {
-  device: MidiDevice,
-  sendQueue: readonly EncodedSysex[],
+  device: MidiDevice
+  sendQueue: readonly EncodedSysex[]
 }
 
 /**
  * Internal state data for response-pending state.
  */
 type ResponsePendingStateData = {
-  device: MidiDevice,
-  sendQueue: readonly EncodedSysex[],
-  commandAwaitingResponse: EncodedSysex,
-  receiveTimeout: Timeout,
+  device: MidiDevice
+  sendQueue: readonly EncodedSysex[]
+  commandAwaitingResponse: EncodedSysex
+  receiveTimeout: Timeout
 }
 
 /**
  * Internal state data for device-busy state
  */
 type DeviceBusyStateData = {
-  device: MidiDevice,
-  sendQueue: readonly EncodedSysex[],
-  retryTimeout: Timeout,
+  device: MidiDevice
+  sendQueue: readonly EncodedSysex[]
+  retryTimeout: Timeout
 }
 
 /**
  * Payload for submit-command action
  */
 type SubmitCommandPayload = {
-  command: EncodedSysex,
+  command: EncodedSysex
 }
 
 /**
  * Payload for response-recieved action
  */
 type ResponseRecievedPayload = {
-  response: EncodedSysex,
+  response: EncodedSysex
 }
-
 
 /**
  * Listeners are informed of interesting events by having various callbacks invoked.
  * All callbacks are optional and will be invoked only if they exist.
  */
 export interface MidiListener {
-  midiCommandSent?: (command: EncodedSysex) => void,
-  midiResponseRecieved?: (response: EncodedSysex, initiatingCommand: EncodedSysex) => void
-  midiCommandTimedOut?: (command: EncodedSysex) => void,
-  midiUnknownMessageRecieved?: (msg: EncodedSysex) => void,
+  midiCommandSent?: (command: EncodedSysex) => void
+  midiResponseRecieved?: (
+    response: EncodedSysex,
+    initiatingCommand: EncodedSysex
+  ) => void
+  midiCommandTimedOut?: (command: EncodedSysex) => void
+  midiUnknownMessageRecieved?: (msg: EncodedSysex) => void
 }
 
 export class MidiDriver {
@@ -100,16 +108,21 @@ export class MidiDriver {
 
   /**
    * Create a new MidiDriver using the target Midi device I/O.
-   * 
+   *
    * Note that this driver assumes that the given device is a Lumatone
    * and doesn't try to detect the manufacturer - things will probably
    * just break silently if you give it the wrong device.
-   * 
+   *
    * @param device Lumatone midi input and output devices.
    */
   constructor(device: MidiDevice) {
+    // debug('midi driver - constructor. device:', device)
     this.#state = { stateName: 'idle', sendQueue: [], device }
-    device.input.addListener('sysex', undefined, this.#onSysexRecieved)
+    device.input.addListener(
+      'sysex',
+      undefined,
+      this.#onSysexRecieved.bind(this)
+    )
 
     // Define the state machine.
 
@@ -132,7 +145,10 @@ export class MidiDriver {
       .actionHandler('idle', 'submit-command', (s, a) => {
         const { command } = a
         const { sendQueue: q, ...internalState } = s
-        return this.#processQueue({ ...internalState, sendQueue: [...q, command] })
+        return this.#processQueue({
+          ...internalState,
+          sendQueue: [...q, command],
+        })
       })
       .actionHandler('response-pending', 'submit-command', (s, a) => {
         const { command } = a
@@ -152,7 +168,12 @@ export class MidiDriver {
       })
       .actionHandler('response-pending', 'response-recieved', (s, a) => {
         const { response } = a
-        const { stateName, commandAwaitingResponse, receiveTimeout, ...internalState } = s
+        const {
+          stateName,
+          commandAwaitingResponse,
+          receiveTimeout,
+          ...internalState
+        } = s
         clearTimeout(receiveTimeout)
 
         const currentState = s
@@ -163,18 +184,26 @@ export class MidiDriver {
           return this.#processQueue(currentState)
         }
         if (!messageIsResponseToMessage(commandAwaitingResponse, response)) {
-          debug('recieved response that does not match expected response', response)
+          debug(
+            'recieved response that does not match expected response',
+            toHex(new Uint8Array(response))
+          )
           // send next message or switch to idle state
           this.#notifyUnexpectedMessage(response)
           return this.#processQueue(currentState)
         }
+        // debug('received response that matches pending comand ' + getCommandId(commandAwaitingResponse))
         const answer = answerState(response)
         if (answer === FirmwareAnswer.BUSY) {
+          debug('firmware busy')
           // device is busy
           // re-enqueue command and set retry timeout
           const { sendQueue: q, ...s } = internalState
           const sendQueue = [commandAwaitingResponse, ...q]
-          const retryTimeout = setTimeout(this.#triggerRetry, BUSY_RETRY_TIMEOUT_MS)
+          const retryTimeout = setTimeout(
+            this.#triggerRetry,
+            BUSY_RETRY_TIMEOUT_MS
+          )
           return {
             stateName: 'device-busy',
             sendQueue: sendQueue,
@@ -183,13 +212,17 @@ export class MidiDriver {
           } as const
         }
         if (answer === FirmwareAnswer.STATE) {
-          debug('Device is in demo mode! All commands will be ignored until demo mode ends.')
+          debug(
+            'Device is in demo mode! All commands will be ignored until demo mode ends.'
+          )
           // send next message or switch to idle state
           return this.#processQueue(currentState)
         }
         // notify listeners
+        // debug('notifying listeners that we received response')
         this.#notifyResponseRecieved(response, commandAwaitingResponse)
 
+        // debug('re-entering process queue')
         // send next message or switch to idle state
         return this.#processQueue(currentState)
       })
@@ -204,7 +237,7 @@ export class MidiDriver {
         return this.#processQueue(s)
       })
       .done()
-      this.#nextState = nextState
+    this.#nextState = nextState
   }
 
   // --- midi interactions ---
@@ -216,8 +249,9 @@ export class MidiDriver {
    * @returns handle to a timeout that will fire after RECIEVE_TIMEOUT_MS have elapsed
    */
   #sendToDevice(output: Output, cmd: EncodedSysex): Timeout {
-      output.sendSysex(MANUFACTURER_ID, [...cmd])
-      return setTimeout(this.#triggerRecieveTimeout, RECIEVE_TIMEOUT_MS)
+    // debug('sending sysex message', cmd)
+    output.sendSysex(MANUFACTURER_ID, [...cmd])
+    return setTimeout(() => this.#triggerRecieveTimeout(), RECIEVE_TIMEOUT_MS)
   }
 
   /**
@@ -225,23 +259,24 @@ export class MidiDriver {
    * @param e midi input event
    */
   #onSysexRecieved(e: InputEventSysex) {
-    debug('sysex recieved', getCommandId(e.data))
-    let msg = [...e.data]
-
     // trim the "sysex start" and "sysex end" marker bytes
-    if (msg[0] === 0xF0) {
+    let msg = [...e.data]
+    if (msg[0] === 0xf0) {
       msg = msg.slice(1)
     }
-    if (msg[msg.length-1] === 0x7F) {
+    if (msg[msg.length - 1] === 0x7f) {
       msg = msg.slice(0, -1)
     }
+
+    // debug('sysex recieved. command id: ', getCommandId(msg))
+
     if (!isLumatoneMessage(msg)) {
       debug('recieved non-lumatone message')
     }
 
     this.#state = this.#nextState(this.#state, {
       actionName: 'response-recieved',
-      response: [...e.data]
+      response: [...msg],
     })
   }
 
@@ -252,8 +287,9 @@ export class MidiDriver {
    * @param command the command sent
    */
   #notifyCommandSent(command: EncodedSysex) {
-    this.#listeners.forEach(l => l.midiCommandSent && 
-      l.midiCommandSent(command))
+    this.#listeners.forEach(
+      (l) => l.midiCommandSent && l.midiCommandSent(command)
+    )
   }
 
   /**
@@ -261,9 +297,15 @@ export class MidiDriver {
    * @param response the reponse recieved
    * @param initiatingCommand the command that triggered the response
    */
-  #notifyResponseRecieved(response: EncodedSysex, initiatingCommand: EncodedSysex) {
-    this.#listeners.forEach(l => l.midiResponseRecieved && 
-      l.midiResponseRecieved(response, initiatingCommand))
+  #notifyResponseRecieved(
+    response: EncodedSysex,
+    initiatingCommand: EncodedSysex
+  ) {
+    this.#listeners.forEach(
+      (l) =>
+        l.midiResponseRecieved &&
+        l.midiResponseRecieved(response, initiatingCommand)
+    )
   }
 
   /**
@@ -272,19 +314,21 @@ export class MidiDriver {
    * @param initiatingCommand the command that timed out
    */
   #notifyResponseTimedOut(initiatingCommand: EncodedSysex) {
-    this.#listeners.forEach(l => l.midiCommandTimedOut &&
-      l.midiCommandTimedOut(initiatingCommand))
+    this.#listeners.forEach(
+      (l) => l.midiCommandTimedOut && l.midiCommandTimedOut(initiatingCommand)
+    )
   }
 
   /**
    * Notify listeners that we recieved an unexpected message (not sent in response to a command, or
    * with an unexpected type)
-   * 
+   *
    * @param msg the unexpected message
    */
   #notifyUnexpectedMessage(msg: EncodedSysex) {
-    this.#listeners.forEach(l => l.midiUnknownMessageRecieved &&
-      l.midiUnknownMessageRecieved(msg))
+    this.#listeners.forEach(
+      (l) => l.midiUnknownMessageRecieved && l.midiUnknownMessageRecieved(msg)
+    )
   }
 
   // --- state triggers ---
@@ -295,22 +339,30 @@ export class MidiDriver {
    * @param command a sysex command message to send
    */
   submitCommand(command: EncodedSysex) {
+    // debug('midi driver - submit-command', command)
     this.#dispatch({ actionName: 'submit-command', command })
   }
 
   /**
    * Dispatch an action to the state machine, potentially advancing to a new state.
-   * @param action 
+   * @param action
    */
   #dispatch(action: FSMAction) {
-    debug('fsm action: ', action.actionName)
+    // debug('fsm action: ', action.actionName)
     const { stateName: oldState } = this.#state
     this.#state = this.#nextState(this.#state, action)
+
+    /*
     if (this.#state.stateName !== oldState) {
-      debug(`transitioned from ${oldState} to ${this.#state.stateName} due to ${action.actionName} action`)
+      debug(
+        `transitioned from ${oldState} to ${this.#state.stateName} due to ${
+          action.actionName
+        } action`
+      )
     } else {
       debug(`action ${action.actionName} resulted in no state transition`)
     }
+    */
   }
 
   /**
@@ -327,23 +379,33 @@ export class MidiDriver {
     this.#dispatch({ actionName: 'response-timed-out' })
   }
 
-  /** 
-    * Process the outgoing message queue. 
-    * Helper function used by state machine action handlers when transitioning to next state.
-    * Has side effects (sending midi to device, setting timeout).
-    * 
-    * If the queue has commands to send, sends the command to the midi device and start the recieve timeout, then
-    * returns the 'response-pending' state.
-    * 
-    * If no commands are waiting in the queue, returns the 'idle' state.
-    */
-  #processQueue(s: State<'idle', IdleStateData> | State<'response-pending', ResponsePendingStateData> | State<'device-busy', DeviceBusyStateData>): State<'idle', IdleStateData> | State<'response-pending', ResponsePendingStateData> {
-    const { sendQueue: q, device } = s 
+  /**
+   * Process the outgoing message queue.
+   * Helper function used by state machine action handlers when transitioning to next state.
+   * Has side effects (sending midi to device, setting timeout).
+   *
+   * If the queue has commands to send, sends the command to the midi device and start the recieve timeout, then
+   * returns the 'response-pending' state.
+   *
+   * If no commands are waiting in the queue, returns the 'idle' state.
+   */
+  #processQueue(
+    s:
+      | State<'idle', IdleStateData>
+      | State<'response-pending', ResponsePendingStateData>
+      | State<'device-busy', DeviceBusyStateData>
+  ):
+    | State<'idle', IdleStateData>
+    | State<'response-pending', ResponsePendingStateData> {
+    const { sendQueue: q, device } = s
     const [cmd, ...sendQueue] = q
+
+    // debug('process queue:', q)
     if (!cmd) {
+      // debug('processQueue - no enqued messages, switching to idle')
       return { stateName: 'idle', sendQueue: [], device } as const
     }
-    
+
     const receiveTimeout = this.#sendToDevice(s.device.output, cmd)
     this.#notifyCommandSent(cmd)
     return {

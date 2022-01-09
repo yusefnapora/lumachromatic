@@ -1,11 +1,17 @@
 import { Note, Interval } from '@tonaljs/tonal'
 import { CoordinateMap } from '../coordinates'
-import type { OffsetCoord, ToneMap, KeyDefinition, KeyGenerator } from '../../types'
-
-
+import type {
+  OffsetCoord,
+  ToneMap,
+  KeyDefinition,
+  KeyGenerator,
+} from '../../types'
 
 // const generatorIntervals = ['2m', '4P', '5P', '7M']
-export function *twelveToneGenerator(stepInterval: string = '5P', startNote: string = 'C'): KeyGenerator {
+export function* twelveToneGenerator(
+  stepInterval: string = '5P',
+  startNote: string = 'C'
+): KeyGenerator {
   // if (!generatorIntervals.includes(stepInterval)) {
   //   throw new Error(`Invalid interval. Valid options: ${generatorIntervals.join(', ')}`)
   // }
@@ -13,7 +19,9 @@ export function *twelveToneGenerator(stepInterval: string = '5P', startNote: str
   let semitones = 0
   let allNotes = new Set()
   while (true) {
-    const note = Note.simplify(Note.transpose(startNote, Interval.fromSemitones(semitones)))
+    const note = Note.simplify(
+      Note.transpose(startNote, Interval.fromSemitones(semitones))
+    )
     if (allNotes.add(note)) {
       // console.log('notes', allNotes)
     }
@@ -26,12 +34,11 @@ export function *twelveToneGenerator(stepInterval: string = '5P', startNote: str
   }
 }
 
-
 interface Props {
-  gen: KeyGenerator, 
-  oddGen?: KeyGenerator,
-  cols?: number,
-  rows?: number,
+  gen: KeyGenerator
+  oddGen?: KeyGenerator
+  cols?: number
+  rows?: number
   transpose?: number
 }
 
@@ -49,29 +56,36 @@ export class RectangularToneMap implements ToneMap {
     for (let r = 0; r < rows; r++) {
       for (let q = 0; q < cols; q++) {
         let definition
-        if ((r % 2) === 0) {
+        if (r % 2 === 0) {
           definition = gen.next().value
         } else {
           definition = oddGen.next().value
         }
         if (transpose) {
-          definition.note = Note.transpose(definition.note, Interval.fromSemitones(transpose))
+          definition.note = Note.transpose(
+            definition.note,
+            Interval.fromSemitones(transpose)
+          )
         }
         this.#coords.set({ q, r }, definition)
       }
     }
   }
 
-  get(c: OffsetCoord): KeyDefinition|undefined {
+  get(c: OffsetCoord): KeyDefinition | undefined {
     return this.#coords.get(c)
   }
 
   transposed(semitones: number): RectangularToneMap {
     if (this.#props.transpose) {
-      const interval = Interval.add(Interval.fromSemitones(this.#props.transpose), Interval.fromSemitones(semitones)) || '1P'
+      const interval =
+        Interval.add(
+          Interval.fromSemitones(this.#props.transpose),
+          Interval.fromSemitones(semitones)
+        ) || '1P'
       semitones = Interval.semitones(interval) || 0
     }
-    return new RectangularToneMap({...this.#props, transpose: semitones})
+    return new RectangularToneMap({ ...this.#props, transpose: semitones })
   }
 }
 
@@ -81,7 +95,10 @@ export function TwelveToneMap(startNote: string = 'C1') {
   const intervalUpRight = '2m'
 
   const genTonic = twelveToneGenerator(intervalRight, startNote)
-  const genOffset = twelveToneGenerator(intervalRight, Note.transpose(startNote, intervalUpRight))
+  const genOffset = twelveToneGenerator(
+    intervalRight,
+    Note.transpose(startNote, intervalUpRight)
+  )
   return new RectangularToneMap({
     gen: genTonic,
     oddGen: genOffset,
