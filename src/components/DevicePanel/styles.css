@@ -14,6 +14,10 @@
   margin: 20px;
 }
 
+.OtherActions {
+  margin: 20px;
+}
+
 .status-connected {
   color: green;
 }

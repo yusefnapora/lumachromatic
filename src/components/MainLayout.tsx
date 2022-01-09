@@ -3,11 +3,8 @@ import DockLayout from 'rc-dock'
 import 'rc-dock/dist/rc-dock-dark.css'
 import type { LayoutBase } from 'rc-dock'
 
-import ColorWheel from '../components/ColorWheel'
-import ParamsPanel from '../components/ParamsPanel'
-import MidiPanel from '../components/MidiPanel'
+import DevicePanel from './DevicePanel'
 import MultiBoard from '../components/MultiBoard'
-import { exportLumatoneIni } from '../lib/lumatone/export'
 import { BoardGeometry } from '../lib/lumatone/BoardGeometry'
 import { LayoutContext } from '../context/layout'
 import HarmonyPanel from './HarmonyPanel'
@@ -16,22 +13,8 @@ export const MainLayout = () => {
   const [layout, setLayout] = useState<LayoutBase | null>(null)
   const layoutRef = useRef<DockLayout>(null)
 
-  const onExport = () => {
-    console.log('exporting temp disabled...')
-    // const {
-    //   harmonic: { scale },
-    //   color: { palette },
-    //   mapping: { toneMap },
-    // } = params
-    // const ini = exportLumatoneIni(toneMap, palette, scale)
-    // const blob = new Blob([ini], { type: 'text/plain;charset=utf-8' })
-    // const filename = scale.name + '.ltn'
-    // saveAs(blob, filename)
-  }
-
   const harmonyPanel = <HarmonyPanel />
-  const midiPanel = <MidiPanel />
-  const colorWheel = <ColorWheel radius={150} />
+  const devicePanel = <DevicePanel />
 
   const keyDiameter = 28
   const keyMargin = 2
@@ -52,7 +35,7 @@ export const MainLayout = () => {
         tabs: [{ id: 'harmony', title: 'Harmony', content: harmonyPanel }],
       },
       {
-        tabs: [{ id: 'midi', title: 'midi', content: midiPanel }],
+        tabs: [{ id: 'device', title: 'Device', content: devicePanel }],
       },
     ],
   }
@@ -63,7 +46,7 @@ export const MainLayout = () => {
       children: [
         {
           size: 800,
-          tabs: [{ id: 'board', title: 'board', content: board }],
+          tabs: [{ id: 'board', title: 'Board', content: board }],
           panelLock: { panelStyle: 'main' },
         },
         paramsLayout,

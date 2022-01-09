@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { saveAs } from 'file-saver'
 import './styles.css'
 import { detectDeviceByName } from '../../lib/lumatone/midi/detect'
 import { useRecoilState, useRecoilValue } from 'recoil'
@@ -9,9 +10,12 @@ import {
   harmonicParamState,
   toneMappingParamState,
 } from '../../state/userParams'
-import { lumatoneDeviceConfig } from '../../lib/lumatone/export'
+import {
+  exportLumatoneIni,
+  lumatoneDeviceConfig,
+} from '../../lib/lumatone/export'
 
-export default function MidiPanel(): React.ReactElement {
+export default function DevicePanel(): React.ReactElement {
   const [searching, setSearching] = useState(false)
   const [deviceState, setDeviceState] = useRecoilState(midiDeviceState)
 
@@ -60,6 +64,13 @@ export default function MidiPanel(): React.ReactElement {
       .catch((err) => console.error('error sending to device', err))
   }
 
+  const onExport = () => {
+    const ini = exportLumatoneIni(toneMap, palette, scale)
+    const blob = new Blob([ini], { type: 'text/plain;charset=utf-8' })
+    const filename = scale.name + '.ltn'
+    saveAs(blob, filename)
+  }
+
   const detectButton = showDetectDeviceButton ? (
     <button type="button" onClick={doDeviceDetect}>
       Detect Lumatone device
@@ -76,6 +87,12 @@ export default function MidiPanel(): React.ReactElement {
     </button>
   ) : undefined
 
+  const exportKeymapButton = (
+    <button type="button" onClick={onExport}>
+      Export Lumatone Keymap
+    </button>
+  )
+
   return (
     <div className="MidiPanel">
       <div className="MidiStatus">
@@ -86,6 +103,7 @@ export default function MidiPanel(): React.ReactElement {
         {detectButton}
         {sendToDeviceButton}
       </div>
+      <div className="OtherActions">{exportKeymapButton}</div>
     </div>
   )
 }
