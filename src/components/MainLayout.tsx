@@ -49,13 +49,10 @@ export const MainLayout = () => {
 
     children: [
       {
-        tabs: [{ id: 'wheel', title: 'Wheel', content: colorWheel }],
+        tabs: [{ id: 'harmony', title: 'Harmony', content: harmonyPanel }],
       },
       {
-        tabs: [
-          { id: 'harmony', title: 'Harmony', content: harmonyPanel },
-          { id: 'midi', title: 'midi', content: midiPanel },
-        ],
+        tabs: [{ id: 'midi', title: 'midi', content: midiPanel }],
       },
     ],
   }

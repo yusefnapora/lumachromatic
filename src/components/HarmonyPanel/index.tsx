@@ -5,6 +5,7 @@ import { SCALE_TYPES } from '../../constants'
 import { ScaleTypeButton } from '../ScaleTypeButton'
 import { useRecoilState } from 'recoil'
 import { harmonicParamState } from '../../state/userParams'
+import ColorWheel from '../ColorWheel'
 
 export default function HarmonyPanel() {
   const [harmonic, setHarmonicState] = useRecoilState(harmonicParamState)
@@ -40,22 +41,30 @@ export default function HarmonyPanel() {
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        justifyContent: 'space-evenly',
-        width: '100%',
-        height: '100%',
+        flexDirection: 'row',
       }}
     >
-      <div>
-        <span>Tonic:</span>
-        <NoteButtonStrip
-          disabledNotes={disabledNotes}
-          onNoteClicked={onNoteClicked}
-        />
-      </div>
+      <ColorWheel radius={150} />
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          justifyContent: 'space-evenly',
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <div>
+          <span>Tonic:</span>
+          <NoteButtonStrip
+            disabledNotes={disabledNotes}
+            onNoteClicked={onNoteClicked}
+          />
+        </div>
 
-      <div style={{}}>{scaleTypeButtons}</div>
+        <div style={{}}>{scaleTypeButtons}</div>
+      </div>
     </div>
   )
 }

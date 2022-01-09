@@ -21,7 +21,7 @@ export const colorParamState = atom({
 export const toneMappingParamState = atom({
   key: 'toneMappingParamState',
   default: {
-    toneMap: TwelveToneMap('C2'),
+    toneMap: TwelveToneMap('C1'),
   },
 })
 

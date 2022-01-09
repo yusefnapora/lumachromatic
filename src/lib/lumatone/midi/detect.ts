@@ -1,18 +1,10 @@
-import { InputEventSysex } from 'webmidi'
-import Debug from 'debug'
 import { getInputs, getOutputs, MidiDevice } from './device'
 
-import { isLumatoneMessage } from './sysex'
-import { ping } from './commands'
-import { decodePing, isOk } from './responses'
-import { MANUFACTURER_ID } from './constants'
-import { errorMessage } from './errors'
-
-const debug = Debug('detect-device')
-
-export async function detectDevice(): Promise<MidiDevice> {
+export async function detectDeviceByName(): Promise<MidiDevice> {
   const inputs = await getInputs()
   const outputs = await getOutputs()
+
+  console.log('detect device. inputs: ', inputs)
 
   if (inputs.length === 0 || outputs.length === 0) {
     throw new Error(`no midi i/o devices found`)
@@ -27,11 +19,34 @@ export async function detectDevice(): Promise<MidiDevice> {
     throw new Error('no output found')
   }
   return { input, output }
+}
 
-  /*
+/*
+// FIXME: this method seems to work, but it leaves the WebMidi input / output devices in an unusable state, and they won't work with the MidiDriver after the detection completes.
+// my guess is that we're leaving a sysex listener registered, which is causing problems with WebMidi somewhere...
+
+import { InputEventSysex } from 'webmidi'
+import { isLumatoneMessage } from './sysex'
+import { ping } from './commands'
+import { decodePing, isOk } from './responses'
+import { MANUFACTURER_ID } from './constants'
+import { errorMessage } from './errors'
+
+import Debug from 'debug'
+const debug = Debug('detect-device')
+
+
+export async function detectDeviceWithPingMessage(): Promise<MidiDevice> {
+  const inputs = await getInputs()
+  const outputs = await getOutputs()
+
+  console.log('detect device. inputs: ', inputs)
+
+  if (inputs.length === 0 || outputs.length === 0) {
+    throw new Error(`no midi i/o devices found`)
+  }
+
   const pingTimeoutMs = 5000
-
-
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(
       () =>
@@ -100,8 +115,11 @@ export async function detectDevice(): Promise<MidiDevice> {
       outputs[i].sendSysex(MANUFACTURER_ID, [...msg])
     }
   })
-  */
+
+
 }
+
+*/
 
 // TODO: move to utils file somewhere?
 export function toHex(buffer: Uint8Array) {

@@ -1,4 +1,4 @@
-import { atom } from 'recoil'
+import { atom, selector } from 'recoil'
 import { LumatoneController } from '../lib/lumatone/midi/controller'
 import { MidiDevice } from '../lib/lumatone/midi/device'
 

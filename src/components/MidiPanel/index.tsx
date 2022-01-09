@@ -1,10 +1,8 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './styles.css'
-import type { MidiDevice } from '../../lib/lumatone/midi/device'
-import { detectDevice, toHex } from '../../lib/lumatone/midi/detect'
+import { detectDeviceByName } from '../../lib/lumatone/midi/detect'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { midiDeviceState } from '../../state/device'
-import { MidiDriver } from '../../lib/lumatone/midi/driver'
 import { LumatoneController } from '../../lib/lumatone/midi/controller'
 import {
   colorParamState,
@@ -12,8 +10,6 @@ import {
   toneMappingParamState,
 } from '../../state/userParams'
 import { lumatoneDeviceConfig } from '../../lib/lumatone/export'
-import { ping } from '../../lib/lumatone/midi/commands'
-import { EncodedSysex } from '../../lib/lumatone/midi/sysex'
 
 export default function MidiPanel(): React.ReactElement {
   const [searching, setSearching] = useState(false)
@@ -26,13 +22,17 @@ export default function MidiPanel(): React.ReactElement {
   const { status } = deviceState
   const connected = status === 'connected'
   const showDetectDeviceButton = !connected && !searching
-  const connectedMessage = connected
-    ? `Connected to ${deviceState.device.input.name}`
-    : 'Not connected to device'
+  const connectedMessage = connected ? (
+    <span className="status-connected">
+      Connected to {deviceState.device.input.name}
+    </span>
+  ) : (
+    <span className="status-disconnected">Not connected to device</span>
+  )
 
-  const detectClicked = () => {
+  const doDeviceDetect = () => {
     setSearching(true)
-    detectDevice()
+    detectDeviceByName()
       .then((device) => {
         setSearching(false)
         const controller = new LumatoneController(device)
@@ -40,8 +40,12 @@ export default function MidiPanel(): React.ReactElement {
       })
       .catch((err) => {
         console.error('error detecting device:', err)
+        setSearching(false)
       })
   }
+
+  useEffect(doDeviceDetect, [])
+
   const sendToDeviceClicked = () => {
     if (!connected) {
       console.warn('no device connected, cannot send key map')
@@ -57,13 +61,13 @@ export default function MidiPanel(): React.ReactElement {
   }
 
   const detectButton = showDetectDeviceButton ? (
-    <button type="button" onClick={detectClicked}>
+    <button type="button" onClick={doDeviceDetect}>
       Detect Lumatone device
     </button>
   ) : undefined
 
   const searchingMessage = searching ? (
-    <span>Searching...</span> // todo: spinner thing
+    <span className="status-searching">Searching...</span> // todo: spinner thing
   ) : undefined
 
   const sendToDeviceButton = connected ? (
