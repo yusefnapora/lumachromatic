@@ -4,11 +4,11 @@
 
 This is a work in progress tool for creating key mappings for the [Lumatone](https://lumatone.io) isomorphic keyboard.
 
-More details coming soon...
+Use the latest deployed version at https://app.lumachromatic.art - use Chrome or a Chrome-derived browser for WebMidi support, and agree to the WebMidi permissions popup.
 
 ## Install & Run
 
-Eventually it'll just be a webpage you can click on. But until I get that sorted out, you can run it locally with node.js.
+If you prefer, you can run the app locally with node.js.
 
 Clone this repo and cd into it:
 
