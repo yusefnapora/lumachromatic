@@ -6,6 +6,7 @@ import TerpstraBoard from './TerpstraBoard'
 import { rotatedRectBounds } from '../lib/drawing'
 import { useRecoilValue } from 'recoil'
 import { colorParamState, toneMappingParamState } from '../state/userParams'
+import { useLayoutContext } from '../context/layout'
 
 interface Props {
   numBoards?: number
@@ -13,6 +14,8 @@ interface Props {
 }
 
 export default function MultiBoard(props: Props): React.ReactElement {
+  const layout = useLayoutContext()
+  console.log('layout: ', layout)
   const numBoards = props.numBoards || 2
   const { toneMap: tm } = useRecoilValue(toneMappingParamState)
   const { palette } = useRecoilValue(colorParamState)
@@ -54,7 +57,7 @@ export default function MultiBoard(props: Props): React.ReactElement {
   return (
     <ScrollContainer className="scroll-container" hideScrollbars={false}>
       <div style={{ width: bounds.size.w, height: bounds.size.h }}>
-        <svg width={bounds.size.w} height={h}>
+        <svg width={bounds.size.w} height={h} transform="translate(0, -120)">
           <g transform={transform}>{...boards}</g>
         </svg>
       </div>

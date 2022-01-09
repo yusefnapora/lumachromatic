@@ -28,11 +28,12 @@ export const MainLayout = () => {
 
   const paramsLayout = {
     mode: 'horizontal' as const,
-    size: 400,
+    size: 600,
 
     children: [
       {
         tabs: [{ id: 'harmony', title: 'Harmony', content: harmonyPanel }],
+        size: 800,
       },
       {
         tabs: [{ id: 'device', title: 'Device', content: devicePanel }],

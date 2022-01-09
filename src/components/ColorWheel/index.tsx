@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Note } from '@tonaljs/tonal'
 import type { Scale } from '@tonaljs/scale'
 
@@ -19,6 +19,10 @@ interface Props {
 export default function ColorWheel(props: Props): React.ReactElement {
   // ref to capture width and height of wrapper div
   const wrapper = useRef<HTMLDivElement>(null)
+
+  // to manually trigger a re-render when the wrapper ref is initialized
+  const [, forceRender] = useState(false)
+
   // force re-render when layout changes (e.g. window or dock tab resizes)
   useLayoutContext()
 
@@ -28,14 +32,21 @@ export default function ColorWheel(props: Props): React.ReactElement {
   let { radius } = props
   const divisions = palette.divisions
 
-  if (wrapper.current) {
-    const w = wrapper.current.offsetWidth
-    const h = wrapper.current.offsetHeight
-    radius = Math.min(w, h) / 2
-    console.log('container w/h', w, h, ' - radius: ', radius)
-  } else {
-    console.log('no wrapper ref...')
+  const updateRadius = () => {
+    if (wrapper.current != null) {
+      const w = wrapper.current.offsetWidth
+      const h = wrapper.current.offsetHeight
+      radius = Math.min(w, h) / 2
+      console.log('container w/h', w, h, ' - radius: ', radius)
+    }
   }
+
+  useEffect(() => {
+    updateRadius()
+    forceRender(true)
+  }, [wrapper.current])
+
+  updateRadius()
 
   const size = radius * 2
   const center = { x: radius, y: radius }

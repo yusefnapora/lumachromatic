@@ -42,9 +42,10 @@ export default function HarmonyPanel() {
       style={{
         display: 'flex',
         flexDirection: 'row',
+        height: '100%',
       }}
     >
-      <ColorWheel radius={150} />
+      <ColorWheel radius={250} />
       <div
         style={{
           display: 'flex',
