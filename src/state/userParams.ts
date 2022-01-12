@@ -21,7 +21,17 @@ export const colorParamState = atom({
 export const toneMappingParamState = atom({
   key: 'toneMappingParamState',
   default: {
-    toneMap: TwelveToneMap('C1'),
+    startingNote: 'C',
+    startingOctave: 1,
+  },
+})
+
+export const toneMappingState = selector({
+  key: 'toneMappingState',
+  get: ({ get }) => {
+    const { startingNote, startingOctave } = get(toneMappingParamState)
+    const toneMap = TwelveToneMap(`${startingNote}${startingOctave}`)
+    return { toneMap }
   },
 })
 

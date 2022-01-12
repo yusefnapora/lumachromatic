@@ -26,6 +26,8 @@ export interface BoardParams {
   numBoards: number
 
   geometry: BoardGeometry
+
+  startingOctave: number
 }
 
 export interface AllParams {

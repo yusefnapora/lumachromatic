@@ -48,11 +48,8 @@ export default function ColorWheel(props: Props): React.ReactElement {
 
   updateRadius()
 
-  const size = radius * 2
   const center = { x: radius, y: radius }
-
   const holeRadius = radius * 0.8
-
   const arcDegrees = 360 / divisions
   const wedges = []
   for (let i = 0; i < divisions; i++) {
@@ -96,7 +93,7 @@ export default function ColorWheel(props: Props): React.ReactElement {
         justifyContent: 'center',
       }}
     >
-      <svg width={size} height={size}>
+      <svg style={{ width: 'inherit', height: 'inherit' }}>
         <defs>
           <mask id="rim-clip">
             <circle cx={center.x} cy={center.y} r={radius} fill="white" />

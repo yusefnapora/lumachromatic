@@ -8,7 +8,7 @@ import { LumatoneController } from '../../lib/lumatone/midi/controller'
 import {
   colorParamState,
   harmonicParamState,
-  toneMappingParamState,
+  toneMappingState,
 } from '../../state/userParams'
 import {
   exportLumatoneIni,
@@ -19,7 +19,7 @@ export default function DevicePanel(): React.ReactElement {
   const [searching, setSearching] = useState(false)
   const [deviceState, setDeviceState] = useRecoilState(midiDeviceState)
 
-  const { toneMap } = useRecoilValue(toneMappingParamState)
+  const { toneMap } = useRecoilValue(toneMappingState)
   const { palette } = useRecoilValue(colorParamState)
   const { scale } = useRecoilValue(harmonicParamState)
 

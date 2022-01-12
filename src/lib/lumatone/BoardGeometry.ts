@@ -8,6 +8,14 @@ export interface BoardGeometryProps {
   origin?: Point // location of top-left point to begin layout from. defaults to 0,0
 }
 
+/**
+ * BoardGeometry maps the abstract geometry of a single 56-key terpstra board to "pixel space" (really, SVG coordinate space).
+ *
+ * The idea is that individial keys are addressed by {@link OffsetCoord}s, which are (column, row) tuples that identify a hex key.
+ * Using {@link centerPoint(coodr)} and {@link hexPath(coord)}, you can get the center point location and SVG path,
+ * respectively.
+ *
+ */
 export class BoardGeometry {
   #keyDiameter: number
   #keyMargin: number
@@ -23,6 +31,11 @@ export class BoardGeometry {
     this.#keyHeight = this.#keyDiameter * 2
   }
 
+  /**
+   * Returns the center point of a hex key at a given coordinate.
+   * @param coord a (col, row) tuple that identifies a hex key
+   * @returns the center point of the key at that coordinate
+   */
   centerPoint(coord: OffsetCoord): Point {
     // center point of "unit key", or key at 0,0
     const c = {

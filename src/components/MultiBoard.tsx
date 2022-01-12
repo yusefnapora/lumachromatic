@@ -5,7 +5,7 @@ import type { BoardGeometry } from '../lib/lumatone/BoardGeometry'
 import TerpstraBoard from './TerpstraBoard'
 import { rotatedRectBounds } from '../lib/drawing'
 import { useRecoilValue } from 'recoil'
-import { colorParamState, toneMappingParamState } from '../state/userParams'
+import { colorParamState, toneMappingState } from '../state/userParams'
 import { useLayoutContext } from '../context/layout'
 
 interface Props {
@@ -17,7 +17,7 @@ export default function MultiBoard(props: Props): React.ReactElement {
   const layout = useLayoutContext()
   console.log('layout: ', layout)
   const numBoards = props.numBoards || 2
-  const { toneMap: tm } = useRecoilValue(toneMappingParamState)
+  const { toneMap: tm } = useRecoilValue(toneMappingState)
   const { palette } = useRecoilValue(colorParamState)
 
   const { geometry: geo } = props

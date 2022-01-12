@@ -19,6 +19,9 @@ export class CoordinateMap<V> {
   }
 }
 
+/**
+ * KeyCoordinates maps between {@link OffsetCoord}s, which are (row, column) tuples on the hex grid, to Lumatone key numbers, which are integers in the range 0-55.
+ */
 export class KeyCoordinates {
   static #keyCoords: OffsetCoord[]
   static #coordToKeyNum: CoordinateMap<number>
