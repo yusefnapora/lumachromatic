@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { saveAs } from 'file-saver'
 import './styles.css'
-import { detectDeviceByName } from '../../lib/lumatone/midi/detect'
+import { detectDeviceWithPingMessage } from '../../lib/lumatone/midi/detect'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { midiDeviceState } from '../../state/device'
 import { LumatoneController } from '../../lib/lumatone/midi/controller'
@@ -36,7 +36,7 @@ export default function DevicePanel(): React.ReactElement {
 
   const doDeviceDetect = () => {
     setSearching(true)
-    detectDeviceByName()
+    detectDeviceWithPingMessage()
       .then((device) => {
         setSearching(false)
         const controller = new LumatoneController(device)
