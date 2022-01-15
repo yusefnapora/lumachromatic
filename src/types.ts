@@ -1,5 +1,4 @@
 import type { Scale as ScaleT } from '@tonaljs/scale'
-import { BoardGeometry } from './lib/lumatone/BoardGeometry'
 import { RXBArray } from './lib/RXB'
 
 export type Point = { x: number; y: number }
@@ -7,35 +6,6 @@ export type Size = { w: number; h: number }
 export type Rect = { origin: Point; size: Size }
 
 export type HexColor = string
-
-export interface HarmonicParams {
-  scale: ScaleT
-}
-
-export interface ColorParams {
-  palette: IPalette
-}
-
-export interface MappingParams {
-  toneMap: ToneMap
-}
-
-export interface BoardParams {
-  keyDiameter: number
-  keyMargin: number
-  numBoards: number
-
-  geometry: BoardGeometry
-
-  startingOctave: number
-}
-
-export interface AllParams {
-  harmonic: HarmonicParams
-  color: ColorParams
-  mapping: MappingParams
-  board: BoardParams
-}
 
 /**
  * OffsetCoord is a point on the hex grid in "offset coordinates," using the "odd-r" layout described
