@@ -1,30 +1,5 @@
 import { getInputs, getOutputs, MidiDevice } from './device'
 
-export async function detectDeviceByName(): Promise<MidiDevice> {
-  const inputs = await getInputs()
-  const outputs = await getOutputs()
-
-  console.log('detect device. inputs: ', inputs)
-
-  if (inputs.length === 0 || outputs.length === 0) {
-    throw new Error(`no midi i/o devices found`)
-  }
-
-  const input = inputs.find((i) => i.name === 'Lumatone')
-  const output = outputs.find((o) => o.name === 'Lumatone')
-  if (!input) {
-    throw new Error('no input found')
-  }
-  if (!output) {
-    throw new Error('no output found')
-  }
-  return { input, output }
-}
-
-/*
-// FIXME: this method seems to work, but it leaves the WebMidi input / output devices in an unusable state, and they won't work with the MidiDriver after the detection completes.
-// my guess is that we're leaving a sysex listener registered, which is causing problems with WebMidi somewhere...
-
 import { InputEventSysex } from 'webmidi'
 import { isLumatoneMessage } from './sysex'
 import { ping } from './commands'
@@ -34,7 +9,6 @@ import { errorMessage } from './errors'
 
 import Debug from 'debug'
 const debug = Debug('detect-device')
-
 
 export async function detectDeviceWithPingMessage(): Promise<MidiDevice> {
   const inputs = await getInputs()
@@ -62,7 +36,7 @@ export async function detectDeviceWithPingMessage(): Promise<MidiDevice> {
     for (const input of inputs) {
       let found = false
       const listener = (e: InputEventSysex) => {
-        const cleanup = () => { 
+        const cleanup = () => {
           input.removeListener('sysex', undefined, listener)
           clearTimeout(timeout)
         }
@@ -71,10 +45,17 @@ export async function detectDeviceWithPingMessage(): Promise<MidiDevice> {
           cleanup()
           return
         }
-        const msg = e.data.slice(1, e.data.length-1)
-        debug('received sysex message on input ', e.target.name + ' / ' + e.target.id + ': ', toHex(msg))
+        const msg = e.data.slice(1, e.data.length - 1)
+        debug(
+          'received sysex message on input ',
+          e.target.name + ' / ' + e.target.id + ': ',
+          toHex(msg)
+        )
         if (!isLumatoneMessage(msg)) {
-          debug('recieved non-lumatone response on input', e.target.name + ' / ' + e.target.id)
+          debug(
+            'recieved non-lumatone response on input',
+            e.target.name + ' / ' + e.target.id
+          )
           debug(msg)
           cleanup()
           return
@@ -92,13 +73,10 @@ export async function detectDeviceWithPingMessage(): Promise<MidiDevice> {
           cleanup()
           return
         }
-        
+
         found = true
         const output = outputs[outputId]
-        debug(`found midi device:
-          - input:  ${input.name} / ${input.id}
-          - output: ${output.name} / ${output.id}
-        `)
+        debug('found midi device: ', { input, output })
         cleanup()
         resolve({ input, output })
       }
@@ -115,11 +93,7 @@ export async function detectDeviceWithPingMessage(): Promise<MidiDevice> {
       outputs[i].sendSysex(MANUFACTURER_ID, [...msg])
     }
   })
-
-
 }
-
-*/
 
 // TODO: move to utils file somewhere?
 export function toHex(buffer: Uint8Array) {

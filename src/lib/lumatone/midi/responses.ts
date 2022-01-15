@@ -6,7 +6,7 @@ export type Result<T> = Ok<T> | ErrorResult
 export type Ok<T> = { value: T }
 export type ErrorResult = { error: ErrorId }
 
-export const isOk = <T>(r: Result<T>): r is Ok<T> => ('value' in r)
+export const isOk = <T>(r: Result<T>): r is Ok<T> => 'value' in r
 
 export type PingResponse = { pingId: number }
 export const decodePing = (msg: EncodedSysex): Result<PingResponse> => {
@@ -20,7 +20,7 @@ export const decodePing = (msg: EncodedSysex): Result<PingResponse> => {
   if (msg[CMD_ID] !== CommandId.LUMA_PING) {
     return { error: ErrorId.MessageIsNotResponseToCommand }
   }
-  const payload = msg.slice(PAYLOAD_INIT, 4)
+  const payload = msg.slice(PAYLOAD_INIT, PAYLOAD_INIT + 4)
   const pingId = (payload[1] << 14) | (payload[2] << 7) | payload[3]
   return { value: { pingId } }
 }
