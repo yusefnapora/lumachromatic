@@ -1,0 +1,9 @@
+# https://numtide.github.io/devshell
+[[commands]]
+package = "devshell.cli"
+help = "Per project developer environments"
+
+[[commands]]
+package = "nodejs-18_x"
+name = "node"
+
