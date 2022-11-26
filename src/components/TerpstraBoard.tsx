@@ -38,6 +38,7 @@ export default function TerpstraBoard(props: Props): React.ReactElement {
     })
     .filter((p) => p != null)
 
+  // TODO: pull this out into a HexKey component (add click handlers, etc)
   // @ts-ignore
   const keys = keyProps.map(({ label, key, ...polygonProps }) => (
     <g key={key}>

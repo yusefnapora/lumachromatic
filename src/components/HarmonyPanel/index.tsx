@@ -1,12 +1,15 @@
 import React from 'react'
 import { Scale } from '@tonaljs/tonal'
-import NoteButtonStrip from '../NoteButtonStrip'
+import NoteButtonStrip from './NoteButtonStrip'
 import { SCALE_TYPES } from '../../constants'
-import { ScaleTypeButton } from '../ScaleTypeButton'
+import { ScaleTypeButton } from './ScaleTypeButton'
 import { useRecoilState } from 'recoil'
 import { harmonicParamState } from '../../state/userParams'
 import ColorWheel from '../ColorWheel'
 
+/**
+ * Settings panel for Scale / Harmony controls.
+ */
 export default function HarmonyPanel() {
   const [harmonic, setHarmonicState] = useRecoilState(harmonicParamState)
 

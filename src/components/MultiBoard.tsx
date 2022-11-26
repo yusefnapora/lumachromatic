@@ -13,6 +13,10 @@ interface Props {
   geometry: BoardGeometry
 }
 
+/**
+ * A group of multiple {@link TerpstraBoard}s, arranged horizontally,
+ * with the entire group rotated to match the angle of the Lumatone keyboard.
+ */
 export default function MultiBoard(props: Props): React.ReactElement {
   const layout = useLayoutContext()
   console.log('layout: ', layout)

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useRecoilValue } from 'recoil'
-import { outlineTextShadow } from '../lib/styleUtils'
-import { colorParamState } from '../state/userParams'
+import { outlineTextShadow } from '../../lib/styleUtils'
+import { colorParamState } from '../../state/userParams'
 
 interface Props {
   note: string

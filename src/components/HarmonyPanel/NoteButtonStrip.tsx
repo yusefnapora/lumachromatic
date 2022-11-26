@@ -1,6 +1,6 @@
 import React from 'react'
 import { NOTES } from '../../constants'
-import { NoteButton } from '../NoteButton'
+import { NoteButton } from './NoteButton'
 
 interface Props {
   disabledNotes?: string[]

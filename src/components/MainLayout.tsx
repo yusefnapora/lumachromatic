@@ -9,6 +9,9 @@ import { BoardGeometry } from '../lib/lumatone/BoardGeometry'
 import { LayoutContext } from '../context/layout'
 import HarmonyPanel from './HarmonyPanel'
 
+/**
+ * Main container component for the app. Defines the panel UI.
+ */
 export const MainLayout = () => {
   const [layout, setLayout] = useState<LayoutBase | null>(null)
   const layoutRef = useRef<DockLayout>(null)
