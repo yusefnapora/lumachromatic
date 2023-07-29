@@ -201,7 +201,7 @@ export class MidiDriver {
           const { sendQueue: q, ...s } = internalState
           const sendQueue = [commandAwaitingResponse, ...q]
           const retryTimeout = setTimeout(
-            this.#triggerRetry,
+            this.#triggerRetry.bind(this),
             BUSY_RETRY_TIMEOUT_MS
           )
           return {
