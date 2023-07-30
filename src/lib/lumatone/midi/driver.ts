@@ -17,7 +17,7 @@ const debug = Debug('midi-driver')
 type Timeout = ReturnType<typeof setTimeout>
 
 const RECIEVE_TIMEOUT_MS = 20000
-const BUSY_RETRY_TIMEOUT_MS = 500
+const BUSY_RETRY_TIMEOUT_MS = 10 // Could be lower, but didn't see a big difference below it
 
 /**
  * The Midi driver is a state machine with the following states:
@@ -97,6 +97,7 @@ export class MidiDriver {
   #state: FSMState
   #nextState // thank god for type inference...
   #listeners: MidiListener[] = []
+  #boardIndex: number
 
   /**
    * Add an event listener.
@@ -115,8 +116,9 @@ export class MidiDriver {
    *
    * @param device Lumatone midi input and output devices.
    */
-  constructor(device: MidiDevice) {
+  constructor(device: MidiDevice, boardIndex: number) {
     // debug('midi driver - constructor. device:', device)
+    this.#boardIndex = boardIndex
     this.#state = { stateName: 'idle', sendQueue: [], device }
     device.input.addListener(
       'sysex',
@@ -201,7 +203,7 @@ export class MidiDriver {
           const { sendQueue: q, ...s } = internalState
           const sendQueue = [commandAwaitingResponse, ...q]
           const retryTimeout = setTimeout(
-            this.#triggerRetry,
+            this.#triggerRetry.bind(this),
             BUSY_RETRY_TIMEOUT_MS
           )
           return {
@@ -272,6 +274,12 @@ export class MidiDriver {
 
     if (!isLumatoneMessage(msg)) {
       debug('recieved non-lumatone message')
+    }
+
+    // Make sure we only handle messages for the board we're handling
+    if (msg[3] !== this.#boardIndex + 1) {
+      // debug('recieved retry message for wrong board ' + msg[3] + ' vs ' + (this.#boardIndex+1))
+      return
     }
 
     this.#state = this.#nextState(this.#state, {
