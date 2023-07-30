@@ -8,14 +8,17 @@ import tinycolor from 'tinycolor2'
  * Public API for interacting with lumatone device.
  */
 export class LumatoneController {
-  #driver: MidiDriver
+  #driver: MidiDriver[]
 
   constructor(device: MidiDevice) {
-    this.#driver = new MidiDriver(device)
+    this.#driver = Array.from(
+      { length: 5 },
+      (_, i) => new MidiDriver(device, i)
+    )
   }
 
-  get driver(): MidiDriver {
-    return this.#driver
+  driver(boardIndex: number): MidiDriver {
+    return this.#driver[boardIndex]
   }
 
   async sendDeviceConfig(config: DeviceConfig): Promise<void> {
@@ -54,7 +57,7 @@ export class LumatoneController {
       b
     )
 
-    this.#driver.submitCommand(setFunctions)
-    this.#driver.submitCommand(setLights)
+    this.#driver[boardIndex].submitCommand(setFunctions)
+    this.#driver[boardIndex].submitCommand(setLights)
   }
 }
